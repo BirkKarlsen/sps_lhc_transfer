@@ -1,0 +1,205 @@
+'''
+Generation of SPS beams which either go to a SPS flattop simulation or directly to the LHC.
+
+Author: Birk Emil Karlsen-Bæck
+'''
+
+# Parse Arguments -----------------------------------------------------------------------------------------------------
+import argparse
+
+parser = argparse.ArgumentParser(description='Script to generated beams in the SPS with intensity effects.')
+
+parser.add_argument('--voltage_200', '-v1', type=float, default=7.5,
+                    help='Voltage of the 200 MHz RF system [MV]; default is 7.5')
+parser.add_argument('--voltage_800', '-v2', type=float, default=0.15,
+                    help='Voltage of the 800 MHz RF system in fract of 200 MHz voltage; default is 0.15')
+parser.add_argument('--intensity', '-in', type=float, default=1.4,
+                    help='Average intensity per bunch in units of 1e11; default is 1.4')
+parser.add_argument('--n_macroparticles', '-nm', type=int, default=1000000,
+                    help='Number of macroparticles per bunch; default is 1 million.')
+parser.add_argument('--exponent', '-ex', type=float, default=1.5,
+                    help='Binomial exponent for bunches; if passed all bunches have the same exponent; default is 1.5')
+parser.add_argument('--bunchlength', '-bl', type=float, default=1.6,
+                    help='Bunch length FWHM for the bunches; if passed all bunches have the same bunch length; default'
+                         'is 1.6 ns')
+parser.add_argument('--beam_type', '-bt', type=str, default='BCMS',
+                    help='Beam type to be generated; default is BCMS.')
+parser.add_argument('--number_bunches', '-nb', type=int, default=36,
+                    help='Number of bunches in the beam; default is 36. If the beam type is 8b4e then it has to be a '
+                         'multiple of 8')
+parser.add_argument('--profile_length', '-pl', type=int, default=800,
+                    help='Length of profile object in units of RF buckets; default is 800')
+parser.add_argument('--ps_batch_length', '-psbl', type=int, default=36,
+                    help='The length of the batches delivered from the PS to the SPS; default is 36 bunches')
+parser.add_argument('--ps_batch_spacing', '-psbs', type=int, default=45,
+                    help='The spacing between PS batches in units of RF buckets; default is 90 buckets')
+
+parser.add_argument('--beam_name', '-bn', type=str,
+                    help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
+parser.add_argument('--input_file', '-if', type=str,
+                    help='Option to specify a file to take all the relevant generation parameters from.')
+parser.add_argument('--custom_beam', '-cb', type=int, default=0,
+                    help='Option to have custom distribution of bunch parameters from measurements.')
+parser.add_argument('--custom_beam_dir', '-cbd', type=str,
+                    help='Directory of the custom beam parameters.')
+
+args = parser.parse_args()
+
+
+beam_ID = f'{args.beam_type}_{args.number_bunches}b_{args.ps_batch_length}pslen_{args.intensity * 1e3:.0f}e8_' \
+          f'{args.bunchlength * 1e3:.0f}ps_{args.voltage_200 * 1e3:.0f}kV_{args.voltage_800 * 100:.0f}percent'
+
+# Imports -------------------------------------------------------------------------------------------------------------
+import numpy as np
+import matplotlib.pyplot as plt
+import yaml
+import os
+
+from simulation_functions.beam_generation_functions import generate_bunch_spacing
+
+from blond.input_parameters.rf_parameters import RFStation
+from blond.input_parameters.ring import Ring
+from blond.beam.beam import Beam, Proton
+from blond.beam.profile import Profile, CutOptions
+from blond.beam.distributions_multibunch import matched_from_distribution_density_multibunch
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.impedances.impedance import TotalInducedVoltage, InducedVoltageFreq
+from blond.impedances.impedance_sources import InputTable
+
+from SPS.impedance_scenario import scenario, impedance2blond
+
+
+# Parameters ----------------------------------------------------------------------------------------------------------
+# Accelerator parameters
+C = 2 * np.pi * 1100.009            # Machine circumference [m]
+p_s = 450e9                         # Synchronous momentum [eV/c]
+h = 4620                            # Harmonic number [-]
+gamma_t = 18.0                      # Transition gamma [-]
+alpha = 1./gamma_t/gamma_t          # First order mom. comp. factor [-]
+V = args.voltage_200 * 1e6          # 200 MHz RF voltage [V]
+V_800 = args.voltage_800 * V        # 800 MHz RF voltage [V]
+dphi = 0                            # 200 MHz Phase modulation/offset [rad]
+dphi_800 = np.pi                    # 800 MHz Phase modulation/offset [rad]
+
+
+# Beam parameters
+N_p = args.intensity * 1e11         # Bunch intensity [p/b]
+exponent = args.exponent
+bl = args.bunchlength * 1e-9
+N_bunches = args.number_bunches
+ps_batch_length = args.ps_batch_length
+ps_batch_spacing = args.ps_batch_spacing
+
+# Simulation parameters
+N_t = 1                             # Number of turns
+N_m = args.n_macroparticles         # Number of macroparticles
+N_m *= N_bunches
+N_p *= N_bunches
+N_buckets = args.profile_length
+
+# Parameters for the SPS Impedance Model
+freqRes = 43.3e3                                # Frequency resolution [Hz]
+modelStr = "futurePostLS2_SPS_f1.txt"           # Name of Impedance Model
+
+# Options -------------------------------------------------------------------------------------------------------------
+LXPLUS = True
+if LXPLUS:
+    lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
+else:
+    lxdir = '../'
+
+# Objects -------------------------------------------------------------------------------------------------------------
+
+# SPS Ring
+ring = Ring(C, alpha, p_s, Proton(), n_turns=1)
+
+# RF Station
+rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
+
+# Beam
+beam = Beam(ring, N_m, N_p)
+
+# Profile
+profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5),
+            cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5),
+            n_slices=int(round(2 ** 7 * (1 + N_buckets)))))
+
+# SPS Impedance Model
+impScenario = scenario(modelStr)
+impModel = impedance2blond(impScenario.table_impedance)
+
+impFreq = InducedVoltageFreq(beam, profile, impModel.impedanceList, freqRes)
+SPSimpedance_table = InputTable(impFreq.freq,impFreq.total_impedance.real*profile.bin_size,
+                                    impFreq.total_impedance.imag*profile.bin_size)
+impedance_freq = InducedVoltageFreq(beam, profile, [SPSimpedance_table],
+                                       frequency_resolution=freqRes)
+total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
+
+# Tracker Object without SPS OTFB
+SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp,
+                                  CavityFeedback=None, Profile=profile, interpolation=True)
+SPS_tracker = FullRingAndRF([SPS_rf_tracker])
+
+# Initialize the bunch
+if not bool(args.custom_beam):
+    bunch_lengths = bl * np.ones(N_bunches)
+    exponents = exponent * np.ones(N_bunches)
+    bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
+    bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
+
+else:
+    try:
+        bunch_lengths = np.load(args.custom_beam_dir + 'bunch_lengths.npy')
+    except:
+        bunch_lengths = bl * np.ones(N_bunches)
+
+    try:
+        exponents = np.load(args.custom_beam_dir + 'exponents.npy')
+    except:
+        exponents = exponent * np.ones(N_bunches)
+
+    try:
+        bunch_intensities = np.load(args.custom_beam_dir + 'bunch_intensities.npy')
+    except:
+        bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
+
+    try:
+        bunch_positions = np.load(args.custom_beam_dir + 'bunch_positions.npy')
+    except:
+        bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
+
+distribution_options_list = {'bunch_length': bunch_lengths,
+                             'type': 'binomial',
+                             'density_variable': 'Hamiltonian',
+                             'bunch_length_fit': 'fwhm',
+                             'exponent': exponents}
+
+if not os.path.isdir(f'{lxdir}generated_beams/{beam_ID}/'):
+    os.system(f'mkdir {lxdir}generated_beams/{beam_ID}/')
+
+if not os.path.isfile(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml'):
+    os.system(f'touch {lxdir}generated_beams/{beam_ID}/generation_settings.yaml')
+
+with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as file:
+    dict_settings = {'voltage 200 MHz': args.voltage_200, 'voltage 800 MHz (fraction)': args.voltage_800,
+                     'bunch intensity': args.intensity, 'macroparticles per bunch': args.n_macroparticles,
+                     'exponent': args.exponent, 'bunch length': args.bunchlength,
+                     'beam type': args.beam_type, 'number of bunches': args.number_bunches,
+                     'PS batch length': args.ps_batch_length, 'PS batch spacing': args.ps_batch_spacing}
+    document = yaml.dump(dict_settings, file)
+
+# If this fails, then generate without OTFB in the tracker and redefine the tracker after with OTFB.
+matched_from_distribution_density_multibunch(beam, ring, SPS_tracker, distribution_options_list, N_bunches,
+                                             bunch_positions, intensity_list=bunch_intensities, n_iterations_input=4,
+                                             TotalInducedVoltage=total_imp)
+
+profile.track()
+
+plt.figure()
+plt.plot(profile.bin_centers, profile.n_macroparticles)
+plt.show()
+
+if args.beam_name is not None:
+    beam_ID = args.beam_name
+
+np.save(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy', np.array([beam.dE, beam.dt]))
