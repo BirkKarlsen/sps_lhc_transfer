@@ -45,17 +45,14 @@ parser.add_argument('--custom_beam_dir', '-cbd', type=str,
 
 args = parser.parse_args()
 
-
-beam_ID = f'{args.beam_type}_{args.number_bunches}b_{args.ps_batch_length}pslen_{args.intensity * 1e3:.0f}e8_' \
-          f'{args.bunchlength * 1e3:.0f}ps_{args.voltage_200 * 1e3:.0f}kV_{args.voltage_800 * 100:.0f}percent'
-
 # Imports -------------------------------------------------------------------------------------------------------------
+print('\nImporting...')
 import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import os
 
-from simulation_functions.beam_generation_functions import generate_bunch_spacing
+from simulation_functions.beam_generation_functions import generate_bunch_spacing, generate_beam_ID
 
 from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring
@@ -97,6 +94,11 @@ N_m *= N_bunches
 N_p *= N_bunches
 N_buckets = args.profile_length
 
+beam_ID = generate_beam_ID(beam_type=args.beam_type, number_bunches=args.number_bunches,
+                           ps_batch_length=args.ps_batch_length, intensity=args.intensity,
+                           bunchlength=args.bunchlength, voltage_200=args.voltage_200,
+                           voltage_800=args.voltage_800)
+
 # Parameters for the SPS Impedance Model
 freqRes = 43.3e3                                # Frequency resolution [Hz]
 modelStr = "futurePostLS2_SPS_f1.txt"           # Name of Impedance Model
@@ -107,8 +109,12 @@ LXPLUS = True
 if not lxdir in os.getcwd():
     lxdir = '../'
     LXPLUS = False
+    print('\nRunning locally...')
+else:
+    print('\nRunning in lxplus...')
 
 # Objects -------------------------------------------------------------------------------------------------------------
+print('\nInitializing Objects...')
 
 # SPS Ring
 ring = Ring(C, alpha, p_s, Proton(), n_turns=1)
