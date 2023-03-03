@@ -24,7 +24,7 @@ parser.add_argument('--bunchlength', '-bl', type=float, default=1.6,
                          'is 1.6 ns')
 parser.add_argument('--beam_type', '-bt', type=str, default='BCMS',
                     help='Beam type to be generated; default is BCMS.')
-parser.add_argument('--number_bunches', '-nb', type=int, default=36,
+parser.add_argument('--number_bunches', '-nb', type=int, default=72,
                     help='Number of bunches in the beam; default is 36. If the beam type is 8b4e then it has to be a '
                          'multiple of 8')
 parser.add_argument('--profile_length', '-pl', type=int, default=800,
@@ -102,11 +102,11 @@ freqRes = 43.3e3                                # Frequency resolution [Hz]
 modelStr = "futurePostLS2_SPS_f1.txt"           # Name of Impedance Model
 
 # Options -------------------------------------------------------------------------------------------------------------
+lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if LXPLUS:
-    lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
-else:
+if not lxdir in os.getcwd():
     lxdir = '../'
+    LXPLUS = False
 
 # Objects -------------------------------------------------------------------------------------------------------------
 
@@ -194,10 +194,10 @@ matched_from_distribution_density_multibunch(beam, ring, SPS_tracker, distributi
                                              TotalInducedVoltage=total_imp)
 
 profile.track()
-
-plt.figure()
-plt.plot(profile.bin_centers, profile.n_macroparticles)
-plt.show()
+if not LXPLUS:
+    plt.figure()
+    plt.plot(profile.bin_centers, profile.n_macroparticles)
+    plt.show()
 
 if args.beam_name is not None:
     beam_ID = args.beam_name

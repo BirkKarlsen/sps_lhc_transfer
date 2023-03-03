@@ -110,11 +110,11 @@ N_p *= N_bunches
 N_t = args.number_of_turns          # Number of turns
 
 # Options -------------------------------------------------------------------------------------------------------------
+lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if LXPLUS:
-    lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
-else:
+if not lxdir in os.getcwd():
     lxdir = '../'
+    LXPLUS = False
 
 # Objects for simulation ----------------------------------------------------------------------------------------------
 print('Initializing Objects...\n')
