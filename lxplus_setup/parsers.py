@@ -162,3 +162,33 @@ def lhc_llrf_argument_parser(add_help=False):
                              'generation')
 
     return parser
+
+
+def generate_parsed_string(args, sim=False, machine='sps'):
+    arg_dict = vars(args)
+    arg_str = ''
+    arguments = list(arg_dict.keys())
+    n_args = len(arguments)
+
+    # Number of SPS arguments
+    sps_llrf = sps_llrf_argument_parser()
+    sps_args = vars(sps_llrf.parse_args())
+    n_sps = len(list(sps_args.keys()))
+
+    # Number of LHC arguments
+    lhc_llrf = lhc_llrf_argument_parser()
+    lhc_args = vars(lhc_llrf.parse_args())
+    n_lhc = len(list(lhc_args.keys()))
+
+    for i in range(n_args):
+        if not arg_dict[arguments[i]] is None:
+            if not sim:
+                arg_str += f'--{arguments[i]} {arg_dict[arguments[i]]} '
+            else:
+                if machine == 'sps' and i < n_args - n_lhc - 2:
+                    arg_str += f'--{arguments[i]} {arg_dict[arguments[i]]} '
+
+                if machine == 'lhc' and (i < n_args - n_lhc - n_sps - 2 or i >= n_args - n_lhc - 2 and i < n_args - 2):
+                    arg_str += f'--{arguments[i]} {arg_dict[arguments[i]]} '
+
+    return arg_str
