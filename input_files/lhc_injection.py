@@ -90,7 +90,6 @@ rfstation = RFStation(ring, [h], [V], [dphi])
 
 # Beam
 beam = Beam(ring, N_m, N_p)
-ddt = 100 * rfstation.t_rf[0, 0]
 if bool(args.simulated_beam):
     imported_beam = np.load(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy')
 else:
@@ -98,11 +97,11 @@ else:
 
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
 beam.dE = imported_beam[0, :]
-beam.dt = imported_beam[1, :] + Dt + ddt
+beam.dt = imported_beam[1, :] + Dt
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0] + ddt,
-                                   cut_right=(N_buckets + 0.5) * rfstation.t_rf[0, 0] + ddt,
+profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0],
+                                   cut_right=(N_buckets + 0.5) * rfstation.t_rf[0, 0],
                                    n_slices=(N_buckets + 1) * 2**7))
 profile.track()
 
@@ -134,7 +133,7 @@ LHC_tracker = FullRingAndRF([rftracker])
 print('\nSimulating...')
 
 # Setting diagnostics function
-diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to,
+diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl)
 

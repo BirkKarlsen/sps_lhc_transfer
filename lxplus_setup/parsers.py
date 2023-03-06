@@ -68,7 +68,8 @@ def simulation_argument_parser(add_help=False):
 
     # Parsers for beam
     parser.add_argument('--beam_name', '-bn', type=str, default='BCMS_72b_36pslen_1400e8_1600ps_7500kV_15percent',
-                        help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
+                        help='Option to give custom name to the beam; default is a name specified by the bunch '
+                             'parameters.')
     parser.add_argument('--profile_length', '-pl', type=int, default=800,
                         help='Length of profile object in units of RF buckets; default is 800')
 
