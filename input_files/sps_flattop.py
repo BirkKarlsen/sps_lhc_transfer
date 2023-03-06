@@ -203,3 +203,4 @@ with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as 
     document = yaml.dump(gen_dict, file)
 
 np.save(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy', np.array([beam.dE, beam.dt]))
+print('\nBeam Extracted!')
