@@ -28,7 +28,7 @@ disable = True
 
 # Parameters ----------------------------------------------------------------------------------------------------------
 bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'
-sub_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submittion_files/'
+sub_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submission_files/'
 
 beam_ID = args.beam_name
 

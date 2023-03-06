@@ -19,7 +19,7 @@ args = parser.parse_args()
 
 # Parameters ----------------------------------------------------------------------------------------------------------
 bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'
-sub_dir =  f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submittion_files/'
+sub_dir =  f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submission_files/'
 
 if args.beam_name is None:
     beam_ID = generate_beam_ID(beam_type=args.beam_type, number_bunches=args.number_bunches,
