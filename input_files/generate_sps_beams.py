@@ -5,44 +5,9 @@ Author: Birk Emil Karlsen-Bæck
 '''
 
 # Parse Arguments -----------------------------------------------------------------------------------------------------
-import argparse
+from lxplus_setup.parsers import generation_argument_parser
 
-parser = argparse.ArgumentParser(description='Script to generated beams in the SPS with intensity effects.')
-
-parser.add_argument('--voltage_200', '-v1', type=float, default=7.5,
-                    help='Voltage of the 200 MHz RF system [MV]; default is 7.5')
-parser.add_argument('--voltage_800', '-v2', type=float, default=0.15,
-                    help='Voltage of the 800 MHz RF system in fract of 200 MHz voltage; default is 0.15')
-parser.add_argument('--intensity', '-in', type=float, default=1.4,
-                    help='Average intensity per bunch in units of 1e11; default is 1.4')
-parser.add_argument('--n_macroparticles', '-nm', type=int, default=1000000,
-                    help='Number of macroparticles per bunch; default is 1 million.')
-parser.add_argument('--exponent', '-ex', type=float, default=1.5,
-                    help='Binomial exponent for bunches; if passed all bunches have the same exponent; default is 1.5')
-parser.add_argument('--bunchlength', '-bl', type=float, default=1.6,
-                    help='Bunch length FWHM for the bunches; if passed all bunches have the same bunch length; default'
-                         'is 1.6 ns')
-parser.add_argument('--beam_type', '-bt', type=str, default='BCMS',
-                    help='Beam type to be generated; default is BCMS.')
-parser.add_argument('--number_bunches', '-nb', type=int, default=72,
-                    help='Number of bunches in the beam; default is 36. If the beam type is 8b4e then it has to be a '
-                         'multiple of 8')
-parser.add_argument('--profile_length', '-pl', type=int, default=800,
-                    help='Length of profile object in units of RF buckets; default is 800')
-parser.add_argument('--ps_batch_length', '-psbl', type=int, default=36,
-                    help='The length of the batches delivered from the PS to the SPS; default is 36 bunches')
-parser.add_argument('--ps_batch_spacing', '-psbs', type=int, default=45,
-                    help='The spacing between PS batches in units of RF buckets; default is 90 buckets')
-
-parser.add_argument('--beam_name', '-bn', type=str,
-                    help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
-parser.add_argument('--input_file', '-if', type=str,
-                    help='Option to specify a file to take all the relevant generation parameters from.')
-parser.add_argument('--custom_beam', '-cb', type=int, default=0,
-                    help='Option to have custom distribution of bunch parameters from measurements.')
-parser.add_argument('--custom_beam_dir', '-cbd', type=str,
-                    help='Directory of the custom beam parameters.')
-
+parser = generation_argument_parser(add_help=True)
 args = parser.parse_args()
 
 # Imports -------------------------------------------------------------------------------------------------------------

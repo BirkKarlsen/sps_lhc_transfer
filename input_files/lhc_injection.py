@@ -5,49 +5,10 @@ Author: Birk Emil Karlsen-Bæck
 '''
 # Parse Arguments -----------------------------------------------------------------------------------------------------
 import argparse
+from lxplus_setup.parsers import simulation_argument_parser, lhc_llrf_argument_parser
 
-parser = argparse.ArgumentParser(description='Script to generated beams in the SPS with intensity effects.')
-
-parser.add_argument('--voltage', '-vo', type=float, default=4,
-                    help='Voltage of the 200 MHz RF system [MV]; default is 4')
-parser.add_argument('--gamma_t', '-gt', type=float, default=53.606713,
-                    help='Transition gamma of the LHC; default is 53.606713')
-parser.add_argument('--number_of_turns', '-nt', type=int, default=2000,
-                    help='Number of turns to track; default is 2000 turns')
-parser.add_argument('--include_impedance', '-imp', type=int, default=1,
-                    help='Option to include LHC impedance model; default is to include it (1)')
-
-# Parsers for the LHC cavity loop
-parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6,
-                    help='Analog gain in the LHC RFFB; default is 6.79e-6 A/V')
-parser.add_argument('--analog_delay', '-ta', type=float, default=170e-6,
-                    help='Analog feedback delay in the LHC RFFB; default is 170e-6 s')
-parser.add_argument('--digital_gain', '-gd', type=float, default=10,
-                    help='Digital gain in the LHC RFFB; default is 10')
-parser.add_argument('--digital_delay', '-td', type=float, default=400e-6,
-                    help='Digital feedback delay in the LHC RFFB; default is 400e-6 s')
-parser.add_argument('--loop_delay', '-tl', type=float, default=650e-9,
-                    help='Total loop delay in the LHC RFFB; default is 650e-9 s')
-parser.add_argument('--loaded_q', '-ql', type=float, default=20000,
-                    help='Loaded quality in the LHC cavity; default is 20000')
-parser.add_argument('--comb_alpha', '-ca', type=float, default=15/16,
-                    help='Comb filter coefficient for the LHC OTFB; default is 15/16')
-parser.add_argument('--otfb_delay', '-to', type=float, default= 1.2e-6,
-                    help='Complementary delay in the LHC OTFB; default is  1.2e-6 s')
-parser.add_argument('--detuning_mu', '-dl', type=int, default=0,
-                    help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
-                         'default is 0.')
-parser.add_argument('--delta_frequency', '-df', type=float, default=0,
-                    help='The detuning at the start of the simulation; default is 0')
-
-# Beam related parameters
-parser.add_argument('--beam_name', '-bn', type=str,
-                    help='Option to give custom name to the beam')
-parser.add_argument('--simulated_beam', '-sb', type=int, default=0,
-                    help='Input a beam simulated at SPS flattop or a beam directly from generation; default is from '
-                         'generation')
-parser.add_argument('--profile_length', '-pl', type=int, default=2000,
-                    help='Length of profile in simulations i units of RF buckets; default is 2000 RF buckets')
+parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), lhc_llrf_argument_parser()],
+                                 description='Script to simulate LHC injection.', add_help=True)
 
 args = parser.parse_args()
 
@@ -120,7 +81,7 @@ N_p *= N_bunches
 N_t = args.number_of_turns                      # Number of turns
 
 # Objects for simulation ----------------------------------------------------------------------------------------------
-print('Initializing Objects...\n')
+print('\nInitializing Objects...')
 # LHC ring
 ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
 

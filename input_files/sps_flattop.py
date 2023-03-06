@@ -6,51 +6,11 @@ Author: Birk Emil Karlsen-Bæck
 
 # Parse Arguments -----------------------------------------------------------------------------------------------------
 import argparse
+from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser
 
-parser = argparse.ArgumentParser(description='Script to simulate beams in the SPS with intensity effects at flattop.')
-
-# General inputs
-parser.add_argument('--save_to', '-st', type=str,
-                    help='Directory to save results to')
-
-# Parsers for beam
-parser.add_argument('--beam_name', '-bn', type=str, default='BCMS_72b_36pslen_1400e8_1600ps_7500kV_15percent',
-                    help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
-parser.add_argument('--profile_length', '-pl', type=int, default=800,
-                    help='Length of profile object in units of RF buckets; default is 800')
-
-# Parsers for SPS cavity controller
-parser.add_argument('--g_ff_1', '-gf1', type=float, default=1,
-                    help='FF gain for 3-section cavities; default is 1')
-parser.add_argument('--g_llrf_1', '-gl1', type=float, default=20,
-                    help='LLRF gain for 3-section cavities; default is 20')
-parser.add_argument('--g_tx_1', '-gt1', type=float, default=1,
-                    help='Transmitter gain for 3-section cavities; default is 1')
-parser.add_argument('--a_comb', '-ac', type=float, default=63/64,
-                    help='Comb filter coefficient; default is 63/64')
-parser.add_argument('--v_part', '-vp', type=float, default=0.6,
-                    help='Voltage partitioning between 3- and 4-section cavities; default is 0.6')
-parser.add_argument('--g_ff_2', '-gf2', type=float,
-                    help='FF gain for 4-section cavities; default is same as 3-section')
-parser.add_argument('--g_llrf_2', '-gl2', type=float,
-                    help='LLRF gain for 4-section cavities; default is same as 3-section')
-parser.add_argument('--g_tx_2', '-gt2', type=float,
-                    help='Transmitter gain for 4-section cavities; default is same as 3-section')
-
-
-# Parsers for simulation
-parser.add_argument('--number_of_turns', '-nt', type=int, default=2000,
-                    help='Number of turns to track; default is 2000 turns')
-parser.add_argument('--diag_setting', '-ds', type=int, default=0, choices=[0, 1, 2],
-                    help='Different simulation diagnostics settings; default is 0')
-parser.add_argument('--dt_cont', '-dct', type=int, default=1,
-                    help='The turns between the continuous signals are sampled; default is every turn')
-parser.add_argument('--dt_beam', '-dbm', type=int, default=1000,
-                    help='The turns between beam parameters are measured; default is every 1000 turns')
-parser.add_argument('--dt_cl', '-dcl', type=int, default=1000,
-                    help='The turns between cavity controller signals are measured; default is every 1000 turns')
-
-
+parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), sps_llrf_argument_parser()],
+                                 description='Script to simulate beams in the SPS with intensity effects at flattop.',
+                                 add_help=True)
 
 args = parser.parse_args()
 
@@ -59,7 +19,6 @@ beam_ID = args.beam_name
 # Imports -------------------------------------------------------------------------------------------------------------
 print('\nImporting...')
 import numpy as np
-import matplotlib.pyplot as plt
 import yaml
 import os
 
@@ -138,7 +97,7 @@ modelStr = "futurePostLS2_SPS_noMain200TWC.txt"         # Name of Impedance Mode
 print('\nInitializing Objects...')
 
 # SPS Ring
-ring = Ring(C, alpha, p_s, Proton(), n_turns=1)
+ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
 
 # RF Station
 rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
@@ -195,7 +154,7 @@ for i in range(N_t):
     diagnostics.track()
 
     if i == 0:
-        print('For-loop successfully entered')
+        print('\nFor-loop successfully entered')
 
 
 with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as file:
