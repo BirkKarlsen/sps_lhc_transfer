@@ -63,14 +63,14 @@ def simulation_argument_parser(add_help=False):
     parser = argparse.ArgumentParser(description='Arguments for simulations.', add_help=add_help)
 
     # General inputs
-    parser.add_argument('--save_to', '-st', type=str,
+    parser.add_argument('--save_to', '-st', type=str, default='',
                         help='Directory to save results to')
 
     # Parsers for beam
-    parser.add_argument('--beam_name', '-bn', type=str, default='BCMS_72b_36pslen_1400e8_1600ps_7500kV_15percent',
+    parser.add_argument('--beam_name', '-bn', type=str, default='BCMS_36b_1400e8_1600ps_7500kV_15percent',
                         help='Option to give custom name to the beam; default is a name specified by the bunch '
                              'parameters.')
-    parser.add_argument('--profile_length', '-pl', type=int, default=800,
+    parser.add_argument('--profile_length', '-pl', type=int, default=1000,
                         help='Length of profile object in units of RF buckets; default is 800')
 
     # Parsers for simulation
@@ -130,8 +130,8 @@ def lhc_llrf_argument_parser(add_help=False):
     parser = argparse.ArgumentParser(description='Arguments for the LHC cavity controller.', add_help=add_help)
 
     # Parsers for the LHC cavity loop
-    parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6,
-                        help='Analog gain in the LHC RFFB; default is 6.79e-6 A/V')
+    parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6 * 1.4,
+                        help='Analog gain in the LHC RFFB; default is 6.79e-6 * 1.4 A/V')
     parser.add_argument('--analog_delay', '-ta', type=float, default=170e-6,
                         help='Analog feedback delay in the LHC RFFB; default is 170e-6 s')
     parser.add_argument('--digital_gain', '-gd', type=float, default=10,
@@ -146,10 +146,12 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='Comb filter coefficient for the LHC OTFB; default is 15/16')
     parser.add_argument('--otfb_delay', '-to', type=float, default=1.2e-6,
                         help='Complementary delay in the LHC OTFB; default is  1.2e-6 s')
-    parser.add_argument('--detuning_mu', '-dl', type=int, default=0,
+    parser.add_argument('--otfb_gain', '-go', type=float, default=10 * 0.7,
+                        help='The OTFB gain; default is 7')
+    parser.add_argument('--detuning_mu', '-dl', type=int, default=-1e-2,
                         help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
                              'default is 0.')
-    parser.add_argument('--delta_frequency', '-df', type=float, default=0,
+    parser.add_argument('--delta_frequency', '-df', type=float, default=-3480,
                         help='The detuning at the start of the simulation; default is 0')
 
     parser.add_argument('--voltage', '-vo', type=float, default=4,

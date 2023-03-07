@@ -65,6 +65,7 @@ tau_a = args.analog_delay                       # Analog FB delay [s]
 tau_d = args.digital_delay                      # Digital FB delay [s]
 a_comb = args.comb_alpha                        # Comb filter alpha [-]
 tau_otfb = args.otfb_delay                      # LHC OTFB delay [s]
+G_o = args.otfb_gain                            # LHC OTFB gain [-]
 Q_L = args.loaded_q                             # Loaded Quality factor [-]
 mu = args.detuning_mu                           # Tuning algorithm coefficient [-]
 df = args.delta_frequency                       # Initial detuning frequnecy [Hz]
@@ -95,13 +96,14 @@ if bool(args.simulated_beam):
 else:
     imported_beam = np.load(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy')
 
+ddt = 1000 * rfstation.t_rf[0, 0]
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
 beam.dE = imported_beam[0, :]
-beam.dt = imported_beam[1, :] + Dt
+beam.dt = imported_beam[1, :] + Dt + ddt
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0],
-                                   cut_right=(N_buckets + 0.5) * rfstation.t_rf[0, 0],
+profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0] + ddt,
+                                   cut_right=(N_buckets + 0.5) * rfstation.t_rf[0, 0] + ddt,
                                    n_slices=(N_buckets + 1) * 2**7))
 profile.track()
 
@@ -117,7 +119,7 @@ else:
     total_Vind = None
 
 # LHC Cavity Controller
-RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu)
+RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o)
 
 CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
                    f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
@@ -141,7 +143,8 @@ diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, N
 for i in range(N_t):
     LHC_tracker.track()
     profile.track()
-    total_Vind.induced_voltage_sum()
+    if args.include_impedance:
+        total_Vind.induced_voltage_sum()
     CL.track()
 
     diagnostics.track()
