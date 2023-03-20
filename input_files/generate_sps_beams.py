@@ -31,6 +31,8 @@ from blond.impedances.impedance_sources import InputTable
 from SPS.impedance_scenario import scenario, impedance2blond
 
 
+
+
 # Parameters ----------------------------------------------------------------------------------------------------------
 # Accelerator parameters
 C = 2 * np.pi * 1100.009            # Machine circumference [m]
@@ -52,11 +54,40 @@ N_bunches = args.number_bunches
 ps_batch_length = args.ps_batch_length
 ps_batch_spacing = args.ps_batch_spacing
 
+# Initialize the bunch
+if not bool(args.custom_beam):
+    bunch_lengths = bl * np.ones(N_bunches)
+    exponents = exponent * np.ones(N_bunches)
+    bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
+    bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
+
+else:
+    try:
+        bunch_lengths = np.load(args.custom_beam_dir + 'bunch_lengths.npy')
+    except:
+        bunch_lengths = bl * np.ones(N_bunches)
+
+    try:
+        exponents = np.load(args.custom_beam_dir + 'exponents.npy')
+    except:
+        exponents = exponent * np.ones(N_bunches)
+
+    try:
+        bunch_intensities = np.load(args.custom_beam_dir + 'bunch_intensities.npy')
+    except:
+        bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
+
+    try:
+        bunch_positions = np.load(args.custom_beam_dir + 'bunch_positions.npy')
+    except:
+        bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
+
+
 # Simulation parameters
 N_t = 1                             # Number of turns
 N_m = args.n_macroparticles         # Number of macroparticles
 N_m *= N_bunches
-N_p *= N_bunches
+N_p = np.sum(bunch_intensities)
 N_buckets = args.profile_length
 
 beam_ID = generate_beam_ID(beam_type=args.beam_type, number_bunches=args.number_bunches,
@@ -111,39 +142,15 @@ SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp
                                   CavityFeedback=None, Profile=profile, interpolation=True)
 SPS_tracker = FullRingAndRF([SPS_rf_tracker])
 
-# Initialize the bunch
-if not bool(args.custom_beam):
-    bunch_lengths = bl * np.ones(N_bunches)
-    exponents = exponent * np.ones(N_bunches)
-    bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
-    bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
-
-else:
-    try:
-        bunch_lengths = np.load(args.custom_beam_dir + 'bunch_lengths.npy')
-    except:
-        bunch_lengths = bl * np.ones(N_bunches)
-
-    try:
-        exponents = np.load(args.custom_beam_dir + 'exponents.npy')
-    except:
-        exponents = exponent * np.ones(N_bunches)
-
-    try:
-        bunch_intensities = np.load(args.custom_beam_dir + 'bunch_intensities.npy')
-    except:
-        bunch_intensities = N_p / N_bunches * np.ones(N_bunches)
-
-    try:
-        bunch_positions = np.load(args.custom_beam_dir + 'bunch_positions.npy')
-    except:
-        bunch_positions = generate_bunch_spacing(N_bunches, 5, ps_batch_length, ps_batch_spacing, args.beam_type)
 
 distribution_options_list = {'bunch_length': bunch_lengths,
                              'type': 'binomial',
                              'density_variable': 'Hamiltonian',
                              'bunch_length_fit': 'fwhm',
                              'exponent': exponents}
+
+if args.beam_name is not None:
+    beam_ID = args.beam_name
 
 if not os.path.isdir(f'{lxdir}generated_beams/{beam_ID}/'):
     os.system(f'mkdir {lxdir}generated_beams/{beam_ID}/')
@@ -152,11 +159,15 @@ if not os.path.isfile(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yam
     os.system(f'touch {lxdir}generated_beams/{beam_ID}/generation_settings.yaml')
 
 with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as file:
+    avg_int = np.mean(bunch_intensities)
+    avg_bl = np.mean(bunch_lengths)
     dict_settings = {'voltage 200 MHz': args.voltage_200, 'voltage 800 MHz (fraction)': args.voltage_800,
-                     'bunch intensity': args.intensity, 'macroparticles per bunch': args.n_macroparticles,
-                     'exponent': args.exponent, 'bunch length': args.bunchlength,
+                     'bunch intensity': float(avg_int),
+                     'macroparticles per bunch': args.n_macroparticles,
+                     'exponent': args.exponent, 'bunch length': float(avg_bl),
                      'beam type': args.beam_type, 'number of bunches': args.number_bunches,
-                     'PS batch length': args.ps_batch_length, 'PS batch spacing': args.ps_batch_spacing}
+                     'PS batch length': args.ps_batch_length, 'PS batch spacing': args.ps_batch_spacing,
+                     'Beam ratio': beam.ratio}
     document = yaml.dump(dict_settings, file)
 
 # If this fails, then generate without OTFB in the tracker and redefine the tracker after with OTFB.
@@ -170,7 +181,7 @@ if not LXPLUS:
     plt.plot(profile.bin_centers, profile.n_macroparticles)
     plt.show()
 
-if args.beam_name is not None:
-    beam_ID = args.beam_name
 
-np.save(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy', np.array([beam.dE, beam.dt]))
+np.save(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy', np.array([beam.dt, beam.dE]))
+np.save(lxdir + f'generated_beams/{beam_ID}/generated_profile.npy',
+        np.array([profile.bin_centers, profile.n_macroparticles * beam.ratio]))

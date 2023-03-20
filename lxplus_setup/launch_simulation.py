@@ -24,7 +24,7 @@ parser.add_argument('--simulation_name', '-sm', type=str,
 
 args = parser.parse_args()
 
-disable = True
+disable = False
 
 # Parameters ----------------------------------------------------------------------------------------------------------
 bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'

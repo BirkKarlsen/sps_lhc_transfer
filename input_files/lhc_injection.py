@@ -30,6 +30,7 @@ from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.llrf.cavity_feedback import LHCRFFeedback, LHCCavityLoop
+from blond.llrf.beam_feedback import BeamFeedback
 from blond.impedances.impedance_sources import InputTable
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 
@@ -98,8 +99,8 @@ else:
 
 ddt = 1000 * rfstation.t_rf[0, 0]
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
-beam.dE = imported_beam[0, :]
-beam.dt = imported_beam[1, :] + Dt + ddt
+beam.dE = imported_beam[1, :]
+beam.dt = imported_beam[0, :] + Dt + ddt
 
 # Beam Profile
 profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0] + ddt,
@@ -125,9 +126,26 @@ CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
                    f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
                    Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
 
+# LHC beam-phase loop and synchronization loop
+if args.pl_gain is None:
+    PL_gain = 1 / (5 * ring.t_rev[0])
+else:
+    PL_gain = args.pl_gain
+
+if args.sl_gain is None:
+    SL_gain = PL_gain / 10
+else:
+    SL_gain = args.sl_gain
+
+bl_config = {'machine': 'LHC',
+             'PL_gain': PL_gain,
+             'SL_gain': SL_gain}
+BL = BeamFeedback(ring, rfstation, profile, bl_config)
+
 # RF tracker object
 rftracker = RingAndRFTracker(rfstation, beam, Profile=profile, interpolation=True,
-                             CavityFeedback=CL, TotalInducedVoltage=total_Vind)
+                             CavityFeedback=CL, BeamFeedback=BL,
+                             TotalInducedVoltage=total_Vind)
 
 LHC_tracker = FullRingAndRF([rftracker])
 
@@ -135,7 +153,7 @@ LHC_tracker = FullRingAndRF([rftracker])
 print('\nSimulating...')
 
 # Setting diagnostics function
-diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, N_bunches,
+diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, args.get_from, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl)
 
@@ -145,7 +163,6 @@ for i in range(N_t):
     profile.track()
     if args.include_impedance:
         total_Vind.induced_voltage_sum()
-    CL.track()
 
     diagnostics.track()
 

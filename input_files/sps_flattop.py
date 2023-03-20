@@ -105,8 +105,8 @@ rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
 # Beam
 beam = Beam(ring, N_m, N_p)
 gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
-beam.dE = gen_beam[0, :]
-beam.dt = gen_beam[1, :]
+beam.dE = gen_beam[1, :]
+beam.dt = gen_beam[0, :]
 
 # Profile
 profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5),
@@ -149,7 +149,6 @@ for i in range(N_t):
     SPS_tracker.track()
     profile.track()
     total_imp.induced_voltage_sum()
-    CF.track()
 
     diagnostics.track()
 
@@ -161,5 +160,7 @@ with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as 
     gen_dict['Turns simulated'] = N_t
     document = yaml.dump(gen_dict, file)
 
-np.save(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy', np.array([beam.dE, beam.dt]))
+np.save(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy', np.array([beam.dt, beam.dE]))
+np.save(lxdir + f'generated_beams/{beam_ID}/simulated_profile.npy',
+        np.array([profile.bin_centers, profile.n_macroparticles * beam.ratio]))
 print('\nBeam Extracted!')

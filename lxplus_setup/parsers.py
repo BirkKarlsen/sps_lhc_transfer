@@ -22,7 +22,7 @@ def generation_argument_parser(add_help=False):
                         help='Voltage of the 800 MHz RF system in fract of 200 MHz voltage; default is 0.15')
     parser.add_argument('--intensity', '-in', type=float, default=1.4,
                         help='Average intensity per bunch in units of 1e11; default is 1.4')
-    parser.add_argument('--n_macroparticles', '-nm', type=int, default=1000000,
+    parser.add_argument('--n_macroparticles', '-nm', type=float, default=1000000,
                         help='Number of macroparticles per bunch; default is 1 million.')
     parser.add_argument('--exponent', '-ex', type=float, default=1.5,
                         help='Binomial exponent for bunches; if passed all bunches have the same exponent; default is 1.5')
@@ -39,7 +39,7 @@ def generation_argument_parser(add_help=False):
     parser.add_argument('--ps_batch_length', '-psbl', type=int, default=36,
                         help='The length of the batches delivered from the PS to the SPS; default is 36 bunches')
     parser.add_argument('--ps_batch_spacing', '-psbs', type=int, default=45,
-                        help='The spacing between PS batches in units of RF buckets; default is 90 buckets')
+                        help='The spacing between PS batches in units of RF buckets; default is 45 buckets')
 
     parser.add_argument('--beam_name', '-bn', type=str,
                         help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
@@ -65,6 +65,8 @@ def simulation_argument_parser(add_help=False):
     # General inputs
     parser.add_argument('--save_to', '-st', type=str, default='',
                         help='Directory to save results to')
+    parser.add_argument('--get_from', '-gf', type=str, default='../',
+                        help='Directory to get data from')
 
     # Parsers for beam
     parser.add_argument('--beam_name', '-bn', type=str, default='BCMS_36b_1400e8_1600ps_7500kV_15percent',
@@ -130,30 +132,37 @@ def lhc_llrf_argument_parser(add_help=False):
     parser = argparse.ArgumentParser(description='Arguments for the LHC cavity controller.', add_help=add_help)
 
     # Parsers for the LHC cavity loop
-    parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6 * 1.4,
-                        help='Analog gain in the LHC RFFB; default is 6.79e-6 * 1.4 A/V')
+    parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6 * 1.3,
+                        help='Analog gain in the LHC RFFB; default is 6.79e-6 * 1.3 A/V')
     parser.add_argument('--analog_delay', '-ta', type=float, default=170e-6,
                         help='Analog feedback delay in the LHC RFFB; default is 170e-6 s')
     parser.add_argument('--digital_gain', '-gd', type=float, default=10,
                         help='Digital gain in the LHC RFFB; default is 10')
     parser.add_argument('--digital_delay', '-td', type=float, default=400e-6,
                         help='Digital feedback delay in the LHC RFFB; default is 400e-6 s')
-    parser.add_argument('--loop_delay', '-tl', type=float, default=650e-9,
-                        help='Total loop delay in the LHC RFFB; default is 650e-9 s')
+    parser.add_argument('--loop_delay', '-tl', type=float, default=650e-9 * 1.05,
+                        help='Total loop delay in the LHC RFFB; default is 650e-9 * 1.05 s')
     parser.add_argument('--loaded_q', '-ql', type=float, default=20000,
                         help='Loaded quality in the LHC cavity; default is 20000')
     parser.add_argument('--comb_alpha', '-ca', type=float, default=15 / 16,
                         help='Comb filter coefficient for the LHC OTFB; default is 15/16')
-    parser.add_argument('--otfb_delay', '-to', type=float, default=1.2e-6,
-                        help='Complementary delay in the LHC OTFB; default is  1.2e-6 s')
-    parser.add_argument('--otfb_gain', '-go', type=float, default=10 * 0.7,
-                        help='The OTFB gain; default is 7')
+    parser.add_argument('--otfb_delay', '-to', type=float, default=1.2e-6 * 0.95,
+                        help='Complementary delay in the LHC OTFB; default is  1.2e-6 * 0.95 s')
+    parser.add_argument('--otfb_gain', '-go', type=float, default=10 * 0.75,
+                        help='The OTFB gain; default is 7.5')
     parser.add_argument('--detuning_mu', '-dl', type=int, default=-1e-2,
                         help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
                              'default is 0.')
     parser.add_argument('--delta_frequency', '-df', type=float, default=-3480,
                         help='The detuning at the start of the simulation; default is 0')
 
+    # Parsers for the global feedback
+    parser.add_argument('--pl_gain', '-plg', type=float,
+                        help='The beam-phase loop gain; default is 1/(5 T_rev).')
+    parser.add_argument('--sl_gain', '-slg', type=float,
+                        help='The synchro loop gain; default is PL_gain/10.')
+
+    # Parsers for the LHC globally
     parser.add_argument('--voltage', '-vo', type=float, default=4,
                         help='Voltage of the 400 MHz RF system [MV]; default is 4')
     parser.add_argument('--gamma_t', '-gt', type=float, default=53.606713,
@@ -161,8 +170,8 @@ def lhc_llrf_argument_parser(add_help=False):
     parser.add_argument('--include_impedance', '-imp', type=int, default=1,
                         help='Option to include LHC impedance model; default is to include it (1)')
     parser.add_argument('--simulated_beam', '-sb', type=int, default=0,
-                        help='Input a beam simulated at SPS flattop or a beam directly from generation; default is from '
-                             'generation')
+                        help='Input a beam simulated at SPS flattop or a beam directly from generation; '
+                             'default is from generation')
 
     return parser
 
