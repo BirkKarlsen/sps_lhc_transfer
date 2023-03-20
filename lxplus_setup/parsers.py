@@ -65,7 +65,7 @@ def simulation_argument_parser(add_help=False):
     # General inputs
     parser.add_argument('--save_to', '-st', type=str, default='',
                         help='Directory to save results to')
-    parser.add_argument('--get_from', '-gf', type=str, default='../',
+    parser.add_argument('--get_from', '-gfr', type=str, default='../',
                         help='Directory to get data from')
 
     # Parsers for beam
