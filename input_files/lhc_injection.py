@@ -37,7 +37,7 @@ from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 # Options -------------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if not lxdir in os.getcwd():
+if 'birkkarlsen-baeck' in os.getcwd():
     lxdir = '../'
     LXPLUS = False
     print('\nRunning locally...')

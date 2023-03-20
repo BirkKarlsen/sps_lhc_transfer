@@ -30,9 +30,6 @@ from blond.impedances.impedance_sources import InputTable
 
 from SPS.impedance_scenario import scenario, impedance2blond
 
-
-
-
 # Parameters ----------------------------------------------------------------------------------------------------------
 # Accelerator parameters
 C = 2 * np.pi * 1100.009            # Machine circumference [m]
@@ -102,7 +99,7 @@ modelStr = "futurePostLS2_SPS_f1.txt"           # Name of Impedance Model
 # Options -------------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if not lxdir in os.getcwd():
+if 'birkkarlsen-baeck' in os.getcwd():
     lxdir = '../'
     LXPLUS = False
     print('\nRunning locally...')

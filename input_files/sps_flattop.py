@@ -38,7 +38,7 @@ from SPS.impedance_scenario import scenario, impedance2blond
 # Options -------------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if not lxdir in os.getcwd():
+if 'birkkarlsen-baeck' in os.getcwd():
     lxdir = '../'
     LXPLUS = False
     print('\nRunning locally...')
@@ -140,7 +140,7 @@ SPS_tracker = FullRingAndRF([SPS_rf_tracker])
 print('\nSimulating...')
 
 # Setting diagnostics function
-diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, args.save_to, N_bunches,
+diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, args.save_to, args.get_from, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl)
 
