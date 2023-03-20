@@ -184,12 +184,12 @@ def generate_parsed_string(args, sim=False, machine='sps'):
 
     # Number of SPS arguments
     sps_llrf = sps_llrf_argument_parser()
-    sps_args = vars(sps_llrf.parse_args())
+    sps_args = vars(sps_llrf.parse_known_args()[0])
     n_sps = len(list(sps_args.keys()))
 
     # Number of LHC arguments
     lhc_llrf = lhc_llrf_argument_parser()
-    lhc_args = vars(lhc_llrf.parse_args())
+    lhc_args = vars(lhc_llrf.parse_known_args()[0])
     n_lhc = len(list(lhc_args.keys()))
 
     for i in range(n_args):
