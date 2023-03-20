@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
 
 parser.add_argument('--machine', '-ma', type=str, choices=['sps', 'lhc'], default='sps',
                     help='Choose accelerator to simulate in; default is the SPS.')
-parser.add_argument('--simulation_name', '-sm', type=str,
+parser.add_argument('--simulation_name', '-sm', type=str, default='test',
                     help='Name of the simulation to be launched.')
 
 args = parser.parse_args()
@@ -49,7 +49,7 @@ if not disable:
     os.system(f'touch {bash_dir}{bash_file_name}')
 
 inputs = generate_parsed_string(args, sim=True, machine=args.machine)
-print(inputs)
+
 if args.machine == 'sps':
     script_name = 'sps_flattop'
 else:
