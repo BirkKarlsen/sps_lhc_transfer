@@ -79,7 +79,7 @@ else:
     G_tx = [args.g_tx_1, args.g_tx_2]
 
 # Beam parameters
-N_p = gen_dict['bunch intensity'] * 1e11                # Average bunch intensity [p/b]
+N_p = gen_dict['bunch intensity']                       # Average bunch intensity [p/b]
 N_bunches = gen_dict['number of bunches']               # Total number of bunches
 
 # Simulation parameters

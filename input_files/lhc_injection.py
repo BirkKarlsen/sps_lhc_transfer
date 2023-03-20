@@ -72,7 +72,7 @@ mu = args.detuning_mu                           # Tuning algorithm coefficient [
 df = args.delta_frequency                       # Initial detuning frequnecy [Hz]
 
 # Beam parameters
-N_p = gen_dict['bunch intensity'] * 1e11        # Average Bunch intensity [p/b]
+N_p = gen_dict['bunch intensity']               # Average Bunch intensity [p/b]
 N_buckets = args.profile_length                 # Length of profile [RF buckets]
 N_bunches = gen_dict['number of bunches']       # Total number of bunches
 N_mpb = gen_dict['macroparticles per bunch']    # Number of macroparticles
