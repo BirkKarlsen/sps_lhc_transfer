@@ -97,10 +97,10 @@ if bool(args.simulated_beam):
 else:
     imported_beam = np.load(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy')
 
-ddt = 1000 * rfstation.t_rf[0, 0]
+ddt = 0 * rfstation.t_rf[0, 0]
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
-beam.dE = imported_beam[1, :]
-beam.dt = imported_beam[0, :] + Dt + ddt
+beam.dE = imported_beam[1, :] + args.energy_error
+beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
 # Beam Profile
 profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0] + ddt,
@@ -111,7 +111,7 @@ profile.track()
 # Impedance model
 if args.include_impedance:
     n_necessary = 57418             # Necessary indices to keep when we want to resolve up to 50 GHz
-    imp_data = np.loadtxt(lxdir + 'impedance/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat', skiprows=1)
+    imp_data = np.loadtxt(lxdir + 'impedance/' + args.impedance_model, skiprows=1)
     imp_table = InputTable(imp_data[:n_necessary, 0], imp_data[:n_necessary, 1], imp_data[:n_necessary, 2])
 
     ind_volt_freq = InducedVoltageFreq(beam, profile, [imp_table])

@@ -172,6 +172,13 @@ def lhc_llrf_argument_parser(add_help=False):
     parser.add_argument('--simulated_beam', '-sb', type=int, default=0,
                         help='Input a beam simulated at SPS flattop or a beam directly from generation; '
                              'default is from generation')
+    parser.add_argument('--energy_error', '-eer', type=float, default=0,
+                        help='Option to add energy offset [MeV] to initial batch; default is 0 MeV')
+    parser.add_argument('--phase_error', '-per', type=float, default=0,
+                        help='Option to add phase offset [degrees] to initial batch; default is 0')
+    parser.add_argument('--impedance_model', '-im', type=str,
+                        default='Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
+                        help='Option to choose which impedance model to use; default is standard LHC injection.')
 
     return parser
 
