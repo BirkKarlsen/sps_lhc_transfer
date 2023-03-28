@@ -157,6 +157,8 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='The detuning at the start of the simulation; default is 0')
 
     # Parsers for the global feedback
+    parser.add_argument('--include_global', '-igl', type=int, default=0,
+                        help='Option to include phase and synchro loop in the simulations.')
     parser.add_argument('--pl_gain', '-plg', type=float,
                         help='The beam-phase loop gain; default is 1/(5 T_rev).')
     parser.add_argument('--sl_gain', '-slg', type=float,
@@ -179,6 +181,11 @@ def lhc_llrf_argument_parser(add_help=False):
     parser.add_argument('--impedance_model', '-im', type=str,
                         default='Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
                         help='Option to choose which impedance model to use; default is standard LHC injection.')
+    parser.add_argument('--ramp', '-r', type=float,
+                        help='Option to include a different final energy [GeV] and this a ramp in simulation; '
+                             'if nothing is passed then there will be no ramp.')
+    parser.add_argument('--ramp_length', '-rl', type=int, default=0,
+                        help='Option to pass the length of the LHC ramp; default is 0 turns.')
 
     return parser
 

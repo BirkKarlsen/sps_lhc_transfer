@@ -82,10 +82,18 @@ N_p *= N_bunches
 # Simulation parameters
 N_t = args.number_of_turns                      # Number of turns
 
+# LHC ramp
+if args.ramp is not None:
+    ramp = np.linspace(p_s, args.ramp * 1e9, args.ramp_length + 1)
+    cycle = np.concatenate((np.linspace(p_s, p_s, N_t), ramp))
+    N_t += args.ramp_length
+else:
+    cycle = np.linspace(p_s, p_s, N_t + 1)
+
 # Objects for simulation ----------------------------------------------------------------------------------------------
 print('\nInitializing Objects...')
 # LHC ring
-ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
+ring = Ring(C, alpha, cycle, Proton(), n_turns=N_t)
 
 # 400MHz RF station
 rfstation = RFStation(ring, [h], [V], [dphi])
@@ -99,13 +107,13 @@ else:
 
 ddt = 0 * rfstation.t_rf[0, 0]
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
-beam.dE = imported_beam[1, :] + args.energy_error
+beam.dE = imported_beam[1, :] + args.energy_error * 1e6
 beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-0.5 * rfstation.t_rf[0, 0] + ddt,
-                                   cut_right=(N_buckets + 0.5) * rfstation.t_rf[0, 0] + ddt,
-                                   n_slices=(N_buckets + 1) * 2**7))
+profile = Profile(beam, CutOptions(cut_left=-2.5 * rfstation.t_rf[0, 0] + ddt,
+                                   cut_right=(N_buckets + 2.5) * rfstation.t_rf[0, 0] + ddt,
+                                   n_slices=(N_buckets + 5) * 2**7))
 profile.track()
 
 # Impedance model
@@ -137,10 +145,13 @@ if args.sl_gain is None:
 else:
     SL_gain = args.sl_gain
 
-bl_config = {'machine': 'LHC',
-             'PL_gain': PL_gain,
-             'SL_gain': SL_gain}
-BL = BeamFeedback(ring, rfstation, profile, bl_config)
+if args.include_global:
+    bl_config = {'machine': 'LHC',
+                 'PL_gain': PL_gain,
+                 'SL_gain': SL_gain}
+    BL = BeamFeedback(ring, rfstation, profile, bl_config)
+else:
+    BL = None
 
 # RF tracker object
 rftracker = RingAndRFTracker(rfstation, beam, Profile=profile, interpolation=True,
@@ -151,6 +162,10 @@ LHC_tracker = FullRingAndRF([rftracker])
 
 # Simulating ----------------------------------------------------------------------------------------------------------
 print('\nSimulating...')
+
+# Make simulation output folder
+if not os.path.isdir(args.save_to):
+    os.mkdir(args.save_to)
 
 # Setting diagnostics function
 diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, args.get_from, N_bunches,
