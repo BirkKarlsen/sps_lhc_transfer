@@ -111,13 +111,13 @@ beam.dE = imported_beam[1, :] + args.energy_error * 1e6
 beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-2.5 * rfstation.t_rf[0, 0] + ddt,
-                                   cut_right=(N_buckets + 2.5) * rfstation.t_rf[0, 0] + ddt,
-                                   n_slices=(N_buckets + 5) * 2**7))
+profile = Profile(beam, CutOptions(cut_left=-10.5 * rfstation.t_rf[0, 0] + ddt,
+                                   cut_right=(N_buckets + 10.5) * rfstation.t_rf[0, 0] + ddt,
+                                   n_slices=(N_buckets + 21) * 2**7))
 profile.track()
 
 # Impedance model
-if args.include_impedance:
+if bool(args.include_impedance):
     n_necessary = 57418             # Necessary indices to keep when we want to resolve up to 50 GHz
     imp_data = np.loadtxt(lxdir + 'impedance/' + args.impedance_model, skiprows=1)
     imp_table = InputTable(imp_data[:n_necessary, 0], imp_data[:n_necessary, 1], imp_data[:n_necessary, 2])
@@ -145,7 +145,7 @@ if args.sl_gain is None:
 else:
     SL_gain = args.sl_gain
 
-if args.include_global:
+if bool(args.include_global):
     bl_config = {'machine': 'LHC',
                  'PL_gain': PL_gain,
                  'SL_gain': SL_gain}
