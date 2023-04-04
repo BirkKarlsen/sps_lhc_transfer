@@ -111,9 +111,9 @@ beam.dE = imported_beam[1, :] + args.energy_error * 1e6
 beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-10.5 * rfstation.t_rf[0, 0] + ddt,
-                                   cut_right=(N_buckets + 10.5) * rfstation.t_rf[0, 0] + ddt,
-                                   n_slices=(N_buckets + 21) * 2**7))
+profile = Profile(beam, CutOptions(cut_left=-50.5 * rfstation.t_rf[0, 0] + ddt,
+                                   cut_right=(N_buckets + 50.5) * rfstation.t_rf[0, 0] + ddt,
+                                   n_slices=(N_buckets + 101) * 2**7))
 profile.track()
 
 # Impedance model
