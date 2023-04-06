@@ -23,6 +23,7 @@ import yaml
 
 import analytical_functions.longitudinal_beam_dynamics as lbd
 from simulation_functions.diagnostics_functions import LHCDiagnostics
+from simulation_functions.machine_beam_processes import fetch_momentum_program
 
 from blond.beam.beam import Beam, Proton
 from blond.beam.profile import Profile, CutOptions
@@ -84,9 +85,11 @@ N_t = args.number_of_turns                      # Number of turns
 
 # LHC ramp
 if args.ramp is not None:
-    ramp = np.linspace(p_s, args.ramp * 1e9, args.ramp_length + 1)
+    ramp = fetch_momentum_program(lxdir + 'momentum_programs/' + args.momentum_program,
+                                  C=C, particle_mass=Proton().mass, target_momentum=args.ramp * 1e9)
     cycle = np.concatenate((np.linspace(p_s, p_s, N_t), ramp))
-    N_t += args.ramp_length
+    N_t = len(cycle) - 1
+    print(f'Ramp length is {len(ramp)} turns')
 else:
     cycle = np.linspace(p_s, p_s, N_t + 1)
 
@@ -128,7 +131,8 @@ else:
     total_Vind = None
 
 # LHC Cavity Controller
-RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o)
+RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
+                     clamping=False)
 
 CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
                    f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
@@ -168,7 +172,7 @@ if not os.path.isdir(args.save_to):
     os.mkdir(args.save_to)
 
 # Setting diagnostics function
-diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, args.save_to, args.get_from, N_bunches,
+diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, args.save_to, args.get_from, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl)
 

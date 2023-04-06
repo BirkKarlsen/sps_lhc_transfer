@@ -179,13 +179,13 @@ def lhc_llrf_argument_parser(add_help=False):
     parser.add_argument('--phase_error', '-per', type=float, default=0,
                         help='Option to add phase offset [degrees] to initial batch; default is 0')
     parser.add_argument('--impedance_model', '-im', type=str,
-                        default='Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
+                        default='LHC_450GeV.dat',
                         help='Option to choose which impedance model to use; default is standard LHC injection.')
     parser.add_argument('--ramp', '-r', type=float,
                         help='Option to include a different final energy [GeV] and this a ramp in simulation; '
                              'if nothing is passed then there will be no ramp.')
-    parser.add_argument('--ramp_length', '-rl', type=int, default=0,
-                        help='Option to pass the length of the LHC ramp; default is 0 turns.')
+    parser.add_argument('--momentum_program', '-mp', type=str, default='LHC_momentum_programme_6.8TeV.csv',
+                        help='Option to choose the momentum program for the LHCM default is the 6.8 TeV ramp')
 
     return parser
 
