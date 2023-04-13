@@ -102,21 +102,26 @@ ring = Ring(C, alpha, cycle, Proton(), n_turns=N_t)
 rfstation = RFStation(ring, [h], [V], [dphi])
 
 # Beam
-beam = Beam(ring, N_m, N_p)
 if bool(args.simulated_beam):
     imported_beam = np.load(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy')
 else:
     imported_beam = np.load(lxdir + f'generated_beams/{beam_ID}/generated_beam.npy')
 
-ddt = 0 * rfstation.t_rf[0, 0]
+beam = Beam(ring, len(imported_beam[1, :]), N_p)
+
+ddt = 1000 * rfstation.t_rf[0, 0]
 Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
 beam.dE = imported_beam[1, :] + args.energy_error * 1e6
 beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
 # Beam Profile
-profile = Profile(beam, CutOptions(cut_left=-50.5 * rfstation.t_rf[0, 0] + ddt,
-                                   cut_right=(N_buckets + 50.5) * rfstation.t_rf[0, 0] + ddt,
-                                   n_slices=(N_buckets + 101) * 2**7))
+profile = Profile(beam, CutOptions(cut_left=-1.5 * rfstation.t_rf[0, 0] + ddt,
+                                   cut_right=(N_buckets + 1.5) * rfstation.t_rf[0, 0] + ddt,
+                                   n_slices=(N_buckets + 3) * 2**7))
+# Modify cuts of the Beam Profile
+beam.statistics()
+profile.cut_options.track_cuts(beam)
+profile.set_slices_parameters()
 profile.track()
 
 # Impedance model
