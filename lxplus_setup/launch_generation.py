@@ -8,7 +8,7 @@ Author: Birk Emil Karlsen-Bæck
 import argparse
 import os
 from lxplus_setup.parsers import generation_argument_parser, generate_parsed_string
-from simulation_functions.beam_generation_functions import generate_beam_ID
+from beam_dynamics_tools.simulation_functions.beam_generation_functions import generate_beam_ID
 
 # Arguments -----------------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(parents=[generation_argument_parser()],

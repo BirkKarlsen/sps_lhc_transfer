@@ -21,9 +21,9 @@ import os
 from scipy.constants import c
 import yaml
 
-import analytical_functions.longitudinal_beam_dynamics as lbd
-from simulation_functions.diagnostics_functions import LHCDiagnostics
-from simulation_functions.machine_beam_processes import fetch_momentum_program
+import beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics as lbd
+from beam_dynamics_tools.simulation_functions.diagnostics_functions import LHCDiagnostics
+from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
 
 from blond.beam.beam import Beam, Proton
 from blond.beam.profile import Profile, CutOptions

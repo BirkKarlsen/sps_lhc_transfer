@@ -22,7 +22,7 @@ import numpy as np
 import yaml
 import os
 
-from simulation_functions.diagnostics_functions import SPSDiagnostics
+from beam_dynamics_tools.simulation_functions.diagnostics_functions import SPSDiagnostics
 
 from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring

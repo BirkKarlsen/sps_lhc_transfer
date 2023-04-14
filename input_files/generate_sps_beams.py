@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import yaml
 import os
 
-from simulation_functions.beam_generation_functions import generate_bunch_spacing, generate_beam_ID
+from beam_dynamics_tools.simulation_functions.beam_generation_functions import generate_bunch_spacing, generate_beam_ID
 
 from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring

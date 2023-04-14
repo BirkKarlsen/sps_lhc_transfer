@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from simulation_functions.machine_beam_processes import fetch_momentum_program, plot_momentum_program
+from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program, \
+    plot_momentum_program
 from blond.beam.beam import Proton
-from analytical_functions.longitudinal_beam_dynamics import rf_bucket_height
-from blond.llrf.signal_processing import smooth_step
+from beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics import rf_bucket_height
 
 
 mom_dir = f'../momentum_programs/LHC_momentum_programme_6.8TeV.csv'

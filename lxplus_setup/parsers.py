@@ -6,6 +6,7 @@ Author: Birk Emil Karlsen-Bæck
 
 import argparse
 
+
 def generation_argument_parser(add_help=False):
     r'''
     Parser for generation of beams in the SPS.
