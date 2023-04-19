@@ -24,6 +24,7 @@ import yaml
 import beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics as lbd
 from beam_dynamics_tools.simulation_functions.diagnostics_functions import LHCDiagnostics
 from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
+from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml
 
 from blond.beam.beam import Beam, Proton
 from blond.beam.profile import Profile, CutOptions
@@ -176,10 +177,13 @@ print('\nSimulating...')
 if not os.path.isdir(args.save_to):
     os.mkdir(args.save_to)
 
+# Fetch injection scheme
+injection_scheme = fetch_from_yaml(args.scheme, lxdir + 'injection_schemes/')
+
 # Setting diagnostics function
 diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, args.save_to, args.get_from, N_bunches,
-                             setting=args.diag_setting, dt_cont=args.dt_cont,
-                             dt_beam=args.dt_beam, dt_cl=args.dt_cl)
+                             injection_scheme=injection_scheme, setting=args.diag_setting, dt_cont=args.dt_cont,
+                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
 
 # Main for loop
 for i in range(N_t):

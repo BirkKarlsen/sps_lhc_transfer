@@ -87,6 +87,8 @@ def simulation_argument_parser(add_help=False):
                         help='The turns between beam parameters are measured; default is every 1000 turns')
     parser.add_argument('--dt_cl', '-dcl', type=int, default=1000,
                         help='The turns between cavity controller signals are measured; default is every 1000 turns')
+    parser.add_argument('--dt_prfl', '-dpr', type=int, default=500,
+                        help='The turns between repositioning the profile cuts; default is every 500 turns')
 
     return parser
 
@@ -186,7 +188,9 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='Option to include a different final energy [GeV] and this a ramp in simulation; '
                              'if nothing is passed then there will be no ramp.')
     parser.add_argument('--momentum_program', '-mp', type=str, default='LHC_momentum_programme_6.8TeV.csv',
-                        help='Option to choose the momentum program for the LHCM default is the 6.8 TeV ramp')
+                        help='Option to choose the momentum program for the LHC default is the 6.8 TeV ramp')
+    parser.add_argument('--scheme', '-shm', type=str, default='single_injection.yaml',
+                        help='Option to input injection scheme into the simulation, default is no injections.')
 
     return parser
 

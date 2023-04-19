@@ -140,9 +140,9 @@ SPS_tracker = FullRingAndRF([SPS_rf_tracker])
 print('\nSimulating...')
 
 # Setting diagnostics function
-diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, args.save_to, args.get_from, N_bunches,
+diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, args.save_to, args.get_from, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
-                             dt_beam=args.dt_beam, dt_cl=args.dt_cl)
+                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
 
 # Main for loop
 for i in range(N_t):

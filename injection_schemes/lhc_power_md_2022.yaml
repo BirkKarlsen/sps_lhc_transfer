@@ -1,0 +1,3 @@
+# List of injections
+LHC_power_MD_BCMS_36b: [470, 3000]
+LHC_power_MD_BCMS_144b: [1890, 10000]
