@@ -9,6 +9,7 @@ import argparse
 import os
 from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser, lhc_llrf_argument_parser, \
     generate_parsed_string
+from lxplus_setup.staging_simulations import stage_data_for_simulation, stage_out_simulation_results
 
 # Arguments -----------------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
@@ -17,7 +18,7 @@ parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
                                  description="This file launches simulations in lxplus.",
                                  add_help=True)
 
-parser.add_argument('--machine', '-ma', type=str, choices=['sps', 'lhc'], default='sps',
+parser.add_argument('--machine', '-ma', type=str, choices=['sps', 'lhc'], default='lhc',
                     help='Choose accelerator to simulate in; default is the SPS.')
 parser.add_argument('--simulation_name', '-sm', type=str, default='test',
                     help='Name of the simulation to be launched.')
@@ -52,15 +53,24 @@ inputs = generate_parsed_string(args, sim=True, machine=args.machine)
 
 if args.machine == 'sps':
     script_name = 'sps_flattop'
+    stage_data = stage_data_for_simulation(args.beam_name, args.get_from, args.save_to,
+                                           'bkarlsen', sps=True, lxplus=not disable)
+    stage_data_out = ''
 else:
     script_name = 'lhc_injection'
+    stage_data = stage_data_for_simulation(args.beam_name, args.get_from, args.save_to, 'bkarlsen',
+                                           sps=False, simulated=args.simulated_beam, inj_sch=args.scheme,
+                                           lxplus=not disable)
+    stage_data_out = stage_out_simulation_results(args.save_to, 'bkarlsen')
 
 
 bash_content = f'#!/bin/bash\n' \
+               f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
+               f'{stage_data}\n' \
                f'python /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs}'
-
+               f'{inputs} \n\n' \
+               f'{stage_data_out}' \
 
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')

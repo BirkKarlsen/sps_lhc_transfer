@@ -8,6 +8,7 @@ Author: Birk Emil Karlsen-Bæck
 import argparse
 import os
 from lxplus_setup.parsers import generation_argument_parser, generate_parsed_string
+from lxplus_setup.staging_simulations import convert_afs_to_eos, stage_data_for_beam_generation
 from beam_dynamics_tools.simulation_functions.beam_generation_functions import generate_beam_ID
 
 # Arguments -----------------------------------------------------------------------------------------------------------
@@ -39,9 +40,15 @@ print(f'\nGenerating bash and submission file for generation of {beam_ID}...')
 # Bash file
 os.system(f'touch {bash_dir}{bash_file_name}')
 
+if bool(args.custom_beam):
+    afsdir = args.custom_beam_dir
+    load_custom_data = stage_data_for_beam_generation(afsdir, 'bkarlsen')
+
 inputs = generate_parsed_string(args)
 bash_content = f'#!/bin/bash\n' \
+               f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
+               f'{load_custom_data}\n' \
                f'python /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/generate_sps_beams.py ' \
                f'{inputs}'
 

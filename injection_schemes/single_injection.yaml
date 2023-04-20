@@ -1,2 +1,2 @@
 # Injection scheme if no beam is injected after the initial
-no injections: [0, 0]
+no injections: [0, 0, 0]

@@ -120,6 +120,8 @@ def sps_llrf_argument_parser(add_help=False):
                         help='LLRF gain for 4-section cavities; default is same as 3-section')
     parser.add_argument('--g_tx_2', '-gt2', type=float,
                         help='Transmitter gain for 4-section cavities; default is same as 3-section')
+    parser.add_argument('--open_ff', '-ff', type=int, default=1,
+                        help='Open the SPS FF; default is 1 (True)')
 
     return parser
 

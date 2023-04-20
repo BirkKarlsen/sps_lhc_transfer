@@ -126,7 +126,7 @@ total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
 
 # SPS Cavity Controller
 Commissioning = CavityFeedbackCommissioning(debug=False, open_loop=False, open_FB=False, open_drive=False,
-                                            open_FF=True, cpp_conv=False, pwr_clamp=False)
+                                            open_FF=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
 CF = SPSCavityFeedback(rfstation, beam, profile, Commissioning=Commissioning, post_LS2=True,
                        G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx,
                        a_comb=args.a_comb, V_part=args.v_part, turns=1000, df=0)
