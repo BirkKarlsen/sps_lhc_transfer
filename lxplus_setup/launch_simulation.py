@@ -69,10 +69,11 @@ bash_content = f'#!/bin/bash\n' \
                f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n' \
                f'{stage_data_out}'
 
-print(bash_content)
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')
     os.system(f'chmod a+x {bash_dir}{bash_file_name}')
+else:
+    print(bash_content)
 
 # Submission file
 if not disable:

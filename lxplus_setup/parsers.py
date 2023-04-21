@@ -65,8 +65,6 @@ def simulation_argument_parser(add_help=False):
                                      prefix_chars='~')
 
     # General inputs
-    parser.add_argument('~~save_to', '~st', type=str, default='',
-                        help='Directory to save results to')
     parser.add_argument('~~simulation_name', '~sm', type=str, default='test',
                         help='Name of the simulation to be launched.')
 
