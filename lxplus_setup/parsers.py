@@ -155,10 +155,10 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='Complementary delay in the LHC OTFB; default is  1.2e-6 * 0.95 s')
     parser.add_argument('--otfb_gain', '-go', type=float, default=10 * 0.75,
                         help='The OTFB gain; default is 7.5')
-    parser.add_argument('--detuning_mu', '-dl', type=int, default=-1e-2,
+    parser.add_argument('--detuning_mu', '-dl', type=float, default=0,
                         help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
                              'default is 0.')
-    parser.add_argument('--delta_frequency', '-df', type=float, default=-3480,
+    parser.add_argument('--delta_frequency', '-df', type=float, default=0,
                         help='The detuning at the start of the simulation; default is 0')
 
     # Parsers for the global feedback
