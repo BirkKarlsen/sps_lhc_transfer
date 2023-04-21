@@ -24,7 +24,7 @@ parser.add_argument('~~machine', '~ma', type=str, choices=['sps', 'lhc'], defaul
 
 args = parser.parse_args()
 
-disable = True
+disable = False
 
 # Parameters ----------------------------------------------------------------------------------------------------------
 bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'
@@ -52,13 +52,13 @@ if args.machine == 'sps':
     script_name = 'sps_flattop'
     stage_data = stage_data_for_simulation(args.beam_name,
                                            'bkarlsen', sps=True, lxplus=not disable)
-    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen')
+    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 else:
     script_name = 'lhc_injection'
     stage_data = stage_data_for_simulation(args.beam_name, 'bkarlsen',
                                            sps=False, simulated=args.simulated_beam, inj_sch=args.scheme,
                                            lxplus=not disable)
-    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen')
+    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 
 
 bash_content = f'#!/bin/bash\n' \

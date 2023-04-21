@@ -141,12 +141,12 @@ def stage_data_for_simulation(beam_name, usr,
     return console_commands
 
 
-def stage_out_simulation_results(save_to, usr):
+def stage_out_simulation_results(save_to, usr, simulation_name):
 
     console_command = ''
     eos_save_to = convert_afs_to_eos(save_to, usr)
-    console_command += f'eos mkdir -p {eos_save_to}\n'
-    console_command += f'eos mv -r {save_to} {eos_save_to}.\n'
+    console_command += f'eos mkdir -p {eos_save_to[:-len(simulation_name) - 1]}\n'
+    console_command += f'eos mv -r {save_to} {eos_save_to[:-len(simulation_name) - 1]}.\n'
 
     return console_command
 
