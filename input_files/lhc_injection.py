@@ -8,7 +8,11 @@ import argparse
 from lxplus_setup.parsers import simulation_argument_parser, lhc_llrf_argument_parser
 
 parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), lhc_llrf_argument_parser()],
-                                 description='Script to simulate LHC injection.', add_help=True)
+                                 description='Script to simulate LHC injection.', add_help=True,
+                                 prefix_chars='~')
+
+parser.add_argument('~~date', '~dte', type=str,
+                    help='Input date of the simulation; if none is parsed then todays date will be taken')
 
 args = parser.parse_args()
 
@@ -20,6 +24,7 @@ import numpy as np
 import os
 from scipy.constants import c
 import yaml
+from datetime import date
 
 import beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics as lbd
 from beam_dynamics_tools.simulation_functions.diagnostics_functions import LHCDiagnostics
@@ -174,14 +179,21 @@ LHC_tracker = FullRingAndRF([rftracker])
 print('\nSimulating...')
 
 # Make simulation output folder
-if not os.path.isdir(args.save_to):
-    os.mkdir(args.save_to)
+if args.date is None:
+    today = date.today()
+    save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+    if not os.path.isdir(save_to):
+        os.mkdir(save_to)
+else:
+    save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
+    if not os.path.isdir(save_to):
+        os.mkdir(save_to)
 
 # Fetch injection scheme
 injection_scheme = fetch_from_yaml(args.scheme, lxdir + 'injection_schemes/')
 
 # Setting diagnostics function
-diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, args.save_to, args.get_from, N_bunches,
+diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, save_to, lxdir, N_bunches,
                              injection_scheme=injection_scheme, setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
 

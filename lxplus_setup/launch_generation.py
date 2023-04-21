@@ -14,7 +14,7 @@ from beam_dynamics_tools.simulation_functions.beam_generation_functions import g
 # Arguments -----------------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(parents=[generation_argument_parser()],
                                  description="This file launches generation of beams in lxplus.",
-                                 add_help=True)
+                                 add_help=True, prefix_chars='~')
 
 args = parser.parse_args()
 

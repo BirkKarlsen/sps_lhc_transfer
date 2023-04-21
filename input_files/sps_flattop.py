@@ -10,7 +10,10 @@ from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_p
 
 parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), sps_llrf_argument_parser()],
                                  description='Script to simulate beams in the SPS with intensity effects at flattop.',
-                                 add_help=True)
+                                 add_help=True, prefix_chars='~')
+
+parser.add_argument('~~date', '~dte', type=str,
+                    help='Input date of the simulation; if none is parsed then todays date will be taken')
 
 args = parser.parse_args()
 
@@ -21,6 +24,7 @@ print('\nImporting...')
 import numpy as np
 import yaml
 import os
+from datetime import date
 
 from beam_dynamics_tools.simulation_functions.diagnostics_functions import SPSDiagnostics
 
@@ -139,8 +143,19 @@ SPS_tracker = FullRingAndRF([SPS_rf_tracker])
 # Simulating ----------------------------------------------------------------------------------------------------------
 print('\nSimulating...')
 
+# Make simulation output folder
+if args.date is None:
+    today = date.today()
+    save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+    if not os.path.isdir(save_to):
+        os.mkdir(save_to)
+else:
+    save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
+    if not os.path.isdir(save_to):
+        os.mkdir(save_to)
+
 # Setting diagnostics function
-diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, args.save_to, args.get_from, N_bunches,
+diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
                              dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
 

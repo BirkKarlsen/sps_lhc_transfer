@@ -8,13 +8,14 @@ import argparse
 from lxplus_setup.parsers import lhc_llrf_argument_parser
 
 parser = argparse.ArgumentParser(parents=[lhc_llrf_argument_parser()],
-                                 description='Script to simulate LHC injection.', add_help=True)
+                                 description='Script to simulate LHC injection.', add_help=True,
+                                 prefix_chars='~')
 
-parser.add_argument('--beam_name', '-bn', type=str,
+parser.add_argument('~~beam_name', '~bn', type=str,
                     help='Input beam for this calculation')
-parser.add_argument('--profile_length', '-pl', type=int, default=500,
+parser.add_argument('~~profile_length', '~pl', type=int, default=500,
                     help='Length of profile object')
-parser.add_argument('--number_of_turns', '-nt', type=int, default=500,
+parser.add_argument('~~number_of_turns', '~nt', type=int, default=500,
                     help='Number of turns to track the detuning')
 
 args = parser.parse_args()
@@ -72,7 +73,7 @@ a_comb = args.comb_alpha                        # Comb filter alpha [-]
 tau_otfb = args.otfb_delay                      # LHC OTFB delay [s]
 G_o = args.otfb_gain                            # LHC OTFB gain [-]
 Q_L = args.loaded_q                             # Loaded Quality factor [-]
-mu = args.detuning_mu                           # Tuning algorithm coefficient [-]
+mu = float(args.detuning_mu)                    # Tuning algorithm coefficient [-]
 df = args.delta_frequency                       # Initial detuning frequnecy [Hz]
 
 # Beam parameters
@@ -115,6 +116,7 @@ profile.set_slices_parameters()
 profile.track()
 
 # LHC Cavity Controller
+print(mu, type(mu))
 RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
                      clamping=False)
 

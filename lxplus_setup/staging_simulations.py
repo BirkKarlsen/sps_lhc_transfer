@@ -83,15 +83,13 @@ def stage_beams(beam_dir, eos_beam_dir, simulated):
     return console_commands
 
 
-def stage_data_for_simulation(beam_name, get_from, save_to, usr,
+def stage_data_for_simulation(beam_name, usr,
                               sps=True, simulated=False, inj_sch='single_injection.yaml', lxplus=True):
     r'''
     Generating console commands for the bash file to correctly stage in the necessary data from eos to perform
     the simulation.
 
     :param beam_name: name of initial beam
-    :param get_from: directory to get data from
-    :param save_to: directory to save data to
     :param usr: usernam
     :param sps: bool if the simulation is in the SPS (True) or in the LHC (False)
     :param simulated: bool if the initial beam has been simulated at SPS flattop (True) or not (False)
@@ -111,12 +109,6 @@ def stage_data_for_simulation(beam_name, get_from, save_to, usr,
     # Generating input and output directories
     if not os.path.isdir(beam_dir):
         console_commands += f'mkdir -p {beam_dir}\n'
-
-    if not os.path.isdir(get_from) and get_from != '':
-        console_commands += f'mkdir -p {get_from}\n'
-
-    if not os.path.isdir(save_to) and save_to != '':
-        console_commands += f'mkdir -p {save_to}\n'
 
     # Loading the generating settings used for the beam to be used in simulation
     if not os.path.isfile(beam_dir + 'generation_settings.yaml'):

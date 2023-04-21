@@ -10,38 +10,35 @@ import os
 from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser, lhc_llrf_argument_parser, \
     generate_parsed_string
 from lxplus_setup.staging_simulations import stage_data_for_simulation, stage_out_simulation_results
+from datetime import date
 
 # Arguments -----------------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
                                           sps_llrf_argument_parser(),
                                           lhc_llrf_argument_parser()],
                                  description="This file launches simulations in lxplus.",
-                                 add_help=True)
+                                 add_help=True, prefix_chars='~')
 
-parser.add_argument('--machine', '-ma', type=str, choices=['sps', 'lhc'], default='lhc',
+parser.add_argument('~~machine', '~ma', type=str, choices=['sps', 'lhc'], default='lhc',
                     help='Choose accelerator to simulate in; default is the SPS.')
-parser.add_argument('--simulation_name', '-sm', type=str, default='test',
-                    help='Name of the simulation to be launched.')
 
 args = parser.parse_args()
 
-disable = False
+disable = True
 
 # Parameters ----------------------------------------------------------------------------------------------------------
 bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'
 sub_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submission_files/'
+lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
+today = date.today()
+save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
 
 beam_ID = args.beam_name
 
 # Setting up files to run beam generation -----------------------------------------------------------------------------
-if args.machine == 'sps':
-    bash_file_name = 'sim_' + beam_ID + '.sh'
-    sub_file_name = 'sim_' + beam_ID + '.sub'
-    file_name = 'sim_' + beam_ID
-else:
-    bash_file_name = args.simulation_name + '.sh'
-    sub_file_name = args.simulation_name + '.sub'
-    file_name = args.simulation_name
+bash_file_name = args.simulation_name + '.sh'
+sub_file_name = args.simulation_name + '.sub'
+file_name = args.simulation_name
 
 print(f'\nGenerating bash and submission file for {file_name}...')
 
@@ -53,15 +50,15 @@ inputs = generate_parsed_string(args, sim=True, machine=args.machine)
 
 if args.machine == 'sps':
     script_name = 'sps_flattop'
-    stage_data = stage_data_for_simulation(args.beam_name, args.get_from, args.save_to,
+    stage_data = stage_data_for_simulation(args.beam_name,
                                            'bkarlsen', sps=True, lxplus=not disable)
-    stage_data_out = ''
+    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen')
 else:
     script_name = 'lhc_injection'
-    stage_data = stage_data_for_simulation(args.beam_name, args.get_from, args.save_to, 'bkarlsen',
+    stage_data = stage_data_for_simulation(args.beam_name, 'bkarlsen',
                                            sps=False, simulated=args.simulated_beam, inj_sch=args.scheme,
                                            lxplus=not disable)
-    stage_data_out = stage_out_simulation_results(args.save_to, 'bkarlsen')
+    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen')
 
 
 bash_content = f'#!/bin/bash\n' \
@@ -69,9 +66,10 @@ bash_content = f'#!/bin/bash\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
                f'{stage_data}\n' \
                f'python /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs} \n\n' \
-               f'{stage_data_out}' \
+               f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n' \
+               f'{stage_data_out}'
 
+print(bash_content)
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')
     os.system(f'chmod a+x {bash_dir}{bash_file_name}')
