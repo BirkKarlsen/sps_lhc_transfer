@@ -226,3 +226,12 @@ def generate_parsed_string(args, sim=False, machine='sps'):
                     arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
 
     return arg_str
+
+
+def parse_arguments_from_dictonary(input_dict: dict):
+    parse_string = ''
+
+    for i, (argmnt, arg_val) in enumerate(input_dict.items()):
+        parse_string += f'~~{argmnt} {arg_val} '
+
+    return parse_string
