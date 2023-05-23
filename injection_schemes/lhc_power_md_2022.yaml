@@ -1,3 +1,3 @@
 # List of injections
-LHC_power_MD_BCMS_36b: [470, 3000, 1]
-LHC_power_MD_BCMS_144b: [1890, 10000, 1]
+LHC_power_MD_BCMS_36b: [1470, 3000, 1, 36]    # injection int bucket, after n turns, simulated, number of bunches
+LHC_power_MD_BCMS_144b: [2890, 10000, 1, 144]

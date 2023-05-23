@@ -183,11 +183,11 @@ if args.date is None:
     today = date.today()
     save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
     if not os.path.isdir(save_to):
-        os.mkdir(save_to)
+        os.makedirs(save_to)
 else:
     save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
     if not os.path.isdir(save_to):
-        os.mkdir(save_to)
+        os.makedirs(save_to)
 
 # Fetch injection scheme
 injection_scheme = fetch_from_yaml(args.scheme, lxdir + 'injection_schemes/')

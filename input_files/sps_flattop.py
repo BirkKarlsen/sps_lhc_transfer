@@ -107,15 +107,22 @@ ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
 rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
 
 # Beam
+ddt = 0 * rfstation.t_rf[0, 0]
 beam = Beam(ring, N_m, N_p)
 gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
 beam.dE = gen_beam[1, :]
-beam.dt = gen_beam[0, :]
+beam.dt = gen_beam[0, :] + ddt
 
 # Profile
-profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5),
-                  cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5),
+profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5) + ddt,
+                  cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5) + ddt,
                   n_slices=int(round(2 ** 7 * (1 + N_buckets)))))
+
+# Modify cuts of the Beam Profile
+beam.statistics()
+profile.cut_options.track_cuts(beam)
+profile.set_slices_parameters()
+profile.track()
 
 # SPS Impedance Model
 impScenario = scenario(modelStr)
@@ -148,7 +155,7 @@ if args.date is None:
     today = date.today()
     save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
     if not os.path.isdir(save_to):
-        os.mkdir(save_to)
+        os.makedirs(save_to)
 else:
     save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
     if not os.path.isdir(save_to):
