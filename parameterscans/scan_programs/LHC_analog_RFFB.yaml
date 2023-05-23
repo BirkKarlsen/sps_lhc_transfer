@@ -8,6 +8,7 @@ dt_cont: 10
 dt_beam: 5000
 dt_cl: 5000
 dt_prfl: 1000
+dt_ld: 100
 detuning_mu: -1e-2
 delta_frequency: -3480
 voltage: 5.0

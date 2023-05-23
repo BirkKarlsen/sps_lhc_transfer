@@ -195,7 +195,7 @@ injection_scheme = fetch_from_yaml(args.scheme, lxdir + 'injection_schemes/')
 # Setting diagnostics function
 diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, save_to, lxdir, N_bunches,
                              injection_scheme=injection_scheme, setting=args.diag_setting, dt_cont=args.dt_cont,
-                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
+                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
 
 # Main for loop
 for i in range(N_t):

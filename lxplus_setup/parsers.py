@@ -88,6 +88,8 @@ def simulation_argument_parser(add_help=False):
                         help='The turns between cavity controller signals are measured; default is every 1000 turns')
     parser.add_argument('~~dt_prfl', '~dpr', type=int, default=500,
                         help='The turns between repositioning the profile cuts; default is every 500 turns')
+    parser.add_argument('~~dt_ld', '~dld', type=int, default=100,
+                        help='The turns between measuring the beam line density; default is every 100 turns')
 
     return parser
 

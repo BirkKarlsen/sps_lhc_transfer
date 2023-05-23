@@ -164,7 +164,7 @@ else:
 # Setting diagnostics function
 diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
                              setting=args.diag_setting, dt_cont=args.dt_cont,
-                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl)
+                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
 
 # Main for loop
 for i in range(N_t):
