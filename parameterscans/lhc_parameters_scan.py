@@ -60,6 +60,9 @@ for param in scans:
 fixed_arguments = parse_arguments_from_dictonary(reg_params)
 sim_folder_name = args.scan_name[:-5] + '/'
 
+os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
+os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
+
 for arguments in itertools.product(*scan_dict.values()):
     sim_name_i = sim_folder_name + 'sim'
     sim_arg_i = ''
