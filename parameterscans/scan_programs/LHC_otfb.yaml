@@ -1,0 +1,29 @@
+# Scan of the LHC OTFB parameters
+beam_name: 'LHC_power_MD_BCMS_12b'
+scheme: 'lhc_power_md_2022_12b_36b.yaml'
+profile_length: 1200
+number_of_turns: 30000
+diag_setting: 1
+dt_cont: 10
+dt_beam: 5000
+dt_cl: 5000
+dt_prfl: 2000
+dt_ld: 5000
+simulated_beam: 1
+ramp: 451.0
+voltage: 5.0
+# Scan over OTFB gain and complimentary delay
+otfb_gain:
+  start: 1
+  stop: 15
+  steps: 15
+  scale: 'linear'
+otfb_delay:
+  start: 0.90e-6
+  stop: 1.6e-6
+  steps: 7
+  scale: 'linear'
+# LHC LLRF parameters
+analog_gain: 8.827e-6
+detuning_mu: -1e-2
+delta_frequency: -3480

@@ -1,0 +1,2 @@
+# Injection fo 48b at 2.0e11 used for LHC injection power transient MDs
+BCMS_48b_int2.0e11: [1470, 10000, 1, 48]

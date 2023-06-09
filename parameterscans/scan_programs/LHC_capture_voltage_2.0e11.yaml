@@ -1,0 +1,25 @@
+# Scan the analog gain and delay
+beam_name: 'LHC_power_MD_BCMS_12b'
+scheme: 'lhc_48b_2.0e11.yaml'
+profile_length: 1200
+number_of_turns: 30000
+diag_setting: 1
+dt_cont: 10
+dt_beam: 5000
+dt_cl: 5000
+dt_prfl: 2000
+dt_ld: 5000
+detuning_mu: -1e-2
+delta_frequency: 0
+simulated_beam: 1
+ramp: 451.0
+# Scan over capture total voltage in the LHC
+voltage:
+  start: 2.0
+  stop: 12.0
+  steps: 20
+  scale: 'linear'
+# LLRF parameters that were found to match LHC power MD 2022 data the best
+analog_gain: 8.827e-6
+otfb_gain: 8
+otfb_delay: 1050e-9

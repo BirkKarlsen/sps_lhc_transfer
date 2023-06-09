@@ -1,0 +1,20 @@
+# Scan of pre-detuning phase with a bunch intensity of 1.8e11
+beam_name: 'LHC_power_MD_BCMS_12b'
+scheme: 'lhc_power_md_2022_12b_36b.yaml'
+profile_length: 1200
+number_of_turns: 30000
+diag_setting: 1
+dt_cont: 10
+dt_beam: 5000
+dt_cl: 5000
+dt_prfl: 2000
+dt_ld: 5000
+detuning_mu: -1e-2
+delta_frequency:
+  start: -3000
+  stop: -10000
+  steps: 20
+  scale: 'linear'
+voltage: 5.0
+simulated_beam: 1
+ramp: 451.0
