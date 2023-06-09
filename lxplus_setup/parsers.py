@@ -140,7 +140,7 @@ def lhc_llrf_argument_parser(add_help=False):
                                      prefix_chars='~')
 
     # Parsers for the LHC cavity loop
-    parser.add_argument('~~analog_gain', '~ga', type=float, default=6.79e-6 * 1.3,
+    parser.add_argument('~~analog_gain', '~ga', type=float, default=6.79e-6,
                         help='Analog gain in the LHC RFFB; default is 6.79e-6 * 1.3 A/V')
     parser.add_argument('~~analog_delay', '~ta', type=float, default=170e-6,
                         help='Analog feedback delay in the LHC RFFB; default is 170e-6 s')
@@ -148,15 +148,15 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='Digital gain in the LHC RFFB; default is 10')
     parser.add_argument('~~digital_delay', '~td', type=float, default=400e-6,
                         help='Digital feedback delay in the LHC RFFB; default is 400e-6 s')
-    parser.add_argument('~~loop_delay', '~tl', type=float, default=650e-9 * 1.05,
+    parser.add_argument('~~loop_delay', '~tl', type=float, default=650e-9,
                         help='Total loop delay in the LHC RFFB; default is 650e-9 * 1.05 s')
     parser.add_argument('~~loaded_q', '~ql', type=float, default=20000,
                         help='Loaded quality in the LHC cavity; default is 20000')
     parser.add_argument('~~comb_alpha', '~ca', type=float, default=15 / 16,
                         help='Comb filter coefficient for the LHC OTFB; default is 15/16')
-    parser.add_argument('~~otfb_delay', '~to', type=float, default=1.2e-6 * 0.95,
+    parser.add_argument('~~otfb_delay', '~to', type=float, default=1.2e-6,
                         help='Complementary delay in the LHC OTFB; default is  1.2e-6 * 0.95 s')
-    parser.add_argument('~~otfb_gain', '~go', type=float, default=10 * 0.75,
+    parser.add_argument('~~otfb_gain', '~go', type=float, default=10,
                         help='The OTFB gain; default is 7.5')
     parser.add_argument('~~detuning_mu', '~dl', type=float, default=0,
                         help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
