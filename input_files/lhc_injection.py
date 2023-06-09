@@ -27,7 +27,7 @@ import yaml
 from datetime import date
 
 import beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics as lbd
-from beam_dynamics_tools.simulation_functions.diagnostics_functions import LHCDiagnostics
+from beam_dynamics_tools.simulation_functions.diagnostics.lhc_diagnostics import LHCDiagnostics
 from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
 from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml
 
