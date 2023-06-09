@@ -21,7 +21,7 @@ otfb_gain:
 otfb_delay:
   start: 0.90e-6
   stop: 1.6e-6
-  steps: 7
+  steps: 8
   scale: 'linear'
 # LHC LLRF parameters
 analog_gain: 8.827e-6
