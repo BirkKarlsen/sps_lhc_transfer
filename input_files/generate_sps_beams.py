@@ -144,7 +144,8 @@ distribution_options_list = {'bunch_length': bunch_lengths,
                              'type': 'binomial',
                              'density_variable': 'Hamiltonian',
                              'bunch_length_fit': 'fwhm',
-                             'exponent': exponents}
+                             'exponent': exponents,
+                             }
 
 if args.beam_name is not None:
     beam_ID = args.beam_name
@@ -169,7 +170,7 @@ with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as 
 
 # If this fails, then generate without OTFB in the tracker and redefine the tracker after with OTFB.
 matched_from_distribution_density_multibunch(beam, ring, SPS_tracker, distribution_options_list, N_bunches,
-                                             bunch_positions, intensity_list=bunch_intensities, n_iterations_input=4,
+                                             bunch_positions, intensity_list=bunch_intensities, n_iterations_input=5,
                                              TotalInducedVoltage=total_imp)
 
 profile.track()

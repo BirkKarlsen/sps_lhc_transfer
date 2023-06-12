@@ -17,7 +17,7 @@ ramp: 451.0
 voltage:
   start: 2.0
   stop: 12.0
-  steps: 20
+  steps: 21
   scale: 'linear'
 # LLRF parameters that were found to match LHC power MD 2022 data the best
 analog_gain: 8.827e-6

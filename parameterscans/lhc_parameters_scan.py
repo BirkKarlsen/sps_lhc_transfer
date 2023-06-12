@@ -10,7 +10,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
                                  add_help=True, prefix_chars='~')
 
-parser.add_argument('~~scan_name', '~sn', type=str, default='LHC_analog_RFFB.yaml',
+parser.add_argument('~~scan_name', '~sn', type=str, default='LHC_capture_voltage_2.0e11.yaml',
                     help='Name of the parameter scan to turn.')
 
 args = parser.parse_args()
@@ -27,6 +27,14 @@ from lxplus_setup.parsers import parse_arguments_from_dictonary
 
 # Directories ---------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
+LXPLUS = True
+if 'birkkarlsen-baeck' in os.getcwd():
+    lxdir = '../'
+    LXPLUS = False
+    print('\nRunning locally...')
+else:
+    print('\nRunning in lxplus...')
+
 
 # Launching scans -----------------------------------------------------------------------------------------------------
 param_dict = fetch_from_yaml(args.scan_name, lxdir + f'parameterscans/scan_programs/')
@@ -60,8 +68,9 @@ for param in scans:
 fixed_arguments = parse_arguments_from_dictonary(reg_params)
 sim_folder_name = args.scan_name[:-5] + '/'
 
-os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
-os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
+if LXPLUS:
+    os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
+    os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
 
 for arguments in itertools.product(*scan_dict.values()):
     sim_name_i = sim_folder_name + 'sim'
@@ -73,4 +82,7 @@ for arguments in itertools.product(*scan_dict.values()):
     launch_string = f'python {lxdir}lxplus_setup/launch_simulation.py ' \
                     f'~ma lhc ~sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
 
-    os.system(launch_string)
+    if LXPLUS:
+        os.system(launch_string)
+    else:
+        print(sim_arg_i)
