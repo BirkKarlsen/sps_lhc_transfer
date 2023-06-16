@@ -65,7 +65,7 @@ bash_content = f'#!/bin/bash\n' \
                f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
                f'{stage_data}\n' \
-               f'python /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
+               f'python3 /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
                f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n' \
                f'{stage_data_out}'
 

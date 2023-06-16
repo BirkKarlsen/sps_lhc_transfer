@@ -71,8 +71,7 @@ sim_folder_name = args.scan_name[:-5] + '/'
 if LXPLUS:
     os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
     os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
-    os.system(f'source /afs/cern.ch/user/b/bkarlsen/.bashrc')
-    os.system(f'which python')
+    os.system(f'which python3')
 
 for arguments in itertools.product(*scan_dict.values()):
     sim_name_i = sim_folder_name + 'sim'
@@ -81,7 +80,7 @@ for arguments in itertools.product(*scan_dict.values()):
         sim_name_i += f'_{param}{arguments[i]:.3e}'
         sim_arg_i += f'~~{param} {arguments[i]} '
 
-    launch_string = f'python {lxdir}lxplus_setup/launch_simulation.py ' \
+    launch_string = f'python3 {lxdir}lxplus_setup/launch_simulation.py ' \
                     f'~ma lhc ~sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
 
     if LXPLUS:

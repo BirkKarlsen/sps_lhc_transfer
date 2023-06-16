@@ -49,7 +49,7 @@ bash_content = f'#!/bin/bash\n' \
                f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
                f'{load_custom_data}\n' \
-               f'python /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/generate_sps_beams.py ' \
+               f'python3 /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/generate_sps_beams.py ' \
                f'{inputs}'
 
 os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')
