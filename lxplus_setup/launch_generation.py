@@ -1,7 +1,7 @@
 '''
 Launching generation of different SPS beams in lxplus.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 # Imports -------------------------------------------------------------------------------------------------------------

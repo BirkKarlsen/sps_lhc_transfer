@@ -1,7 +1,7 @@
 '''
 Simulation of LHC flattop with a beam generated in the SPS.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 # Parse Arguments -----------------------------------------------------------------------------------------------------
 import argparse

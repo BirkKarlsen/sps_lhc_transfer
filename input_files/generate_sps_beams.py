@@ -1,7 +1,7 @@
 '''
 Generation of SPS beams which either go to a SPS flattop simulation or directly to the LHC.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 # Parse Arguments -----------------------------------------------------------------------------------------------------

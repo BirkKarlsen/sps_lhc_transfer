@@ -1,5 +1,5 @@
 '''
 File launching parameter scans of the SPS RF parameters and beam parameters.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''

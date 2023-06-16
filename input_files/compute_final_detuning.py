@@ -1,7 +1,7 @@
 '''
 File to simulate the detuning algorithm for a given number of turns with a given beam.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 # Parse Arguments -----------------------------------------------------------------------------------------------------
 import argparse

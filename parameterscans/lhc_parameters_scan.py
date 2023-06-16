@@ -1,7 +1,7 @@
 '''
 File launching parameter scans of LHC parameters.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 # Arguments -----------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 '''
 Argument parser for simulation scripts and simulation setups.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 import argparse

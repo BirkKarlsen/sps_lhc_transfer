@@ -1,7 +1,7 @@
 '''
 Functions to load the correct data for lxplus simulations.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 import os

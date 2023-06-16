@@ -1,7 +1,7 @@
 '''
 Launching simulations either SPS flattop or LHC injection.
 
-Author: Birk Emil Karlsen-Bæck
+Author: Birk Emil Karlsen-Baeck
 '''
 
 # Imports -------------------------------------------------------------------------------------------------------------
