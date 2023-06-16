@@ -71,6 +71,7 @@ sim_folder_name = args.scan_name[:-5] + '/'
 if LXPLUS:
     os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
     os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
+    os.system(f'source /afs/cern.ch/user/b/bkarlsen/.bashrc')
     os.system(f'which python')
 
 for arguments in itertools.product(*scan_dict.values()):
