@@ -36,7 +36,7 @@ from blond.beam.profile import Profile, CutOptions
 from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.llrf.cavity_feedback import LHCRFFeedback, LHCCavityLoop
+from blond.llrf.cavity_feedback import LHCCavityLoopCommissioning, LHCCavityLoop
 from blond.llrf.beam_feedback import BeamFeedback
 from blond.impedances.impedance_sources import InputTable
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
@@ -142,8 +142,8 @@ else:
     total_Vind = None
 
 # LHC Cavity Controller
-RFFB = LHCRFFeedback(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
-                     clamping=False)
+RFFB = LHCCavityLoopCommissioning(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
+                                  clamping=False)
 
 CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
                    f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,

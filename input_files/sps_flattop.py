@@ -33,7 +33,7 @@ from blond.input_parameters.ring import Ring
 from blond.beam.beam import Beam, Proton
 from blond.beam.profile import Profile, CutOptions
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.llrf.cavity_feedback import CavityFeedbackCommissioning, SPSCavityFeedback
+from blond.llrf.cavity_feedback import SPSCavityLoopCommissioning, SPSCavityFeedback
 from blond.impedances.impedance import TotalInducedVoltage, InducedVoltageFreq
 from blond.impedances.impedance_sources import InputTable
 
@@ -136,11 +136,11 @@ impedance_freq = InducedVoltageFreq(beam, profile, [SPSimpedance_table], frequen
 total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
 
 # SPS Cavity Controller
-Commissioning = CavityFeedbackCommissioning(debug=False, open_loop=False, open_FB=False, open_drive=False,
-                                            open_FF=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
-CF = SPSCavityFeedback(rfstation, beam, profile, Commissioning=Commissioning, post_LS2=True,
-                       G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx,
-                       a_comb=args.a_comb, V_part=args.v_part, turns=1000, df=0)
+Commissioning = SPSCavityLoopCommissioning(debug=False, open_loop=False, open_FB=False, open_drive=False,
+                                           open_FF=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
+CF = SPSCavityFeedback(rfstation, profile, Commissioning=Commissioning, post_LS2=True,
+                       G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx, a_comb=args.a_comb,
+                       V_part=args.v_part, turns=1000, df=0)
 
 # Tracker Object without SPS OTFB
 SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp,
