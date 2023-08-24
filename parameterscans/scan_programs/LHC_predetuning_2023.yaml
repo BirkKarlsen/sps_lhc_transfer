@@ -1,0 +1,18 @@
+# Scan of pre-detuning phase with a bunch intensity of 1.6e11 (operational settings for 2023)
+beam_name: 'LHC_2023_hybrid_pilot_12b'
+scheme: 'lhc_2023_hybrid_12b_164b.yaml'
+profile_length: 2200
+number_of_turns: 5000
+diag_setting: 1
+dt_cont: 10
+dt_beam: 500
+dt_cl: 500
+dt_prfl: 200
+dt_ld: 500
+delta_frequency:
+  start: -3600
+  stop: -16000
+  steps: 41
+  scale: 'linear'
+voltage: 5.0
+simulated_beam: 1
