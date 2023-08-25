@@ -159,7 +159,7 @@ if args.date is None:
 else:
     save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
     if not os.path.isdir(save_to):
-        os.mkdir(save_to)
+        os.makedirs(save_to)
 
 # Setting diagnostics function
 diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
