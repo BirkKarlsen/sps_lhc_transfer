@@ -161,7 +161,7 @@ with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as 
     avg_bl = np.mean(bunch_lengths)
     dict_settings = {'voltage 200 MHz': args.voltage_200, 'voltage 800 MHz (fraction)': args.voltage_800,
                      'bunch intensity': float(avg_int),
-                     'macroparticles per bunch': args.n_macroparticles,
+                     'macroparticles per bunch': len(beam.dt) / args.number_bunches,
                      'exponent': args.exponent, 'bunch length': float(avg_bl),
                      'beam type': args.beam_type, 'number of bunches': args.number_bunches,
                      'PS batch length': args.ps_batch_length, 'PS batch spacing': args.ps_batch_spacing,
