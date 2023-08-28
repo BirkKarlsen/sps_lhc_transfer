@@ -16,3 +16,4 @@ delta_frequency:
   scale: 'linear'
 voltage: 5.0
 simulated_beam: 1
+include_global: 1
