@@ -221,10 +221,10 @@ def generate_parsed_string(args, sim=False, machine='sps'):
             if not sim:
                 arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
             else:
-                if machine == 'sps' and i < n_args - n_lhc - 1:
+                if machine == 'sps' and i < n_args - n_lhc - 2:
                     arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
 
-                if machine == 'lhc' and (i < n_args - n_lhc - n_sps - 1 or i >= n_args - n_lhc - 1 and i < n_args - 1):
+                if machine == 'lhc' and (i < n_args - n_lhc - n_sps - 2 or i >= n_args - n_lhc - 2 and i < n_args - 2):
                     arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
 
     return arg_str

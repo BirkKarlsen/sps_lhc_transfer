@@ -14,11 +14,7 @@ delta_frequency:
   stop: -16000
   steps: 41
   scale: 'linear'
-loaded_q:
-  start: 17500
-  stop: 22500
-  steps: 3
-  scale: 'linear'
+loaded_q: 18176
 voltage: 5.0
 simulated_beam: 1
 include_global: 1

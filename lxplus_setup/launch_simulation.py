@@ -21,6 +21,15 @@ parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
 
 parser.add_argument('~~machine', '~ma', type=str, choices=['sps', 'lhc'], default='lhc',
                     help='Choose accelerator to simulate in; default is the SPS.')
+job_flavours = ['espresso',         # 20 minutes
+                'microcentury',     # 1 hour
+                'longlunch',        # 2 hours
+                'workday',          # 8 hours
+                'tomorrow',         # 1 day
+                'testmatch',        # 3 days
+                'nextweek']         # 1 week
+parser.add_argument('~~flavour', '~f', type=str, choices=job_flavours, default='testmatch',
+                    help='Length of allocated for the simulaton; default is testmatch (3 days)')
 
 args = parser.parse_args()
 
@@ -84,7 +93,7 @@ sub_content = f'executable = {bash_dir}{bash_file_name}\n' \
               f'output = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).out\n' \
               f'error = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).err\n' \
               f'log = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).log\n' \
-              f'+JobFlavour = \\"testmatch\\"\n' \
+              f'+JobFlavour = \\"{args.flavour}\\"\n' \
               f'queue'
 
 if not disable:
