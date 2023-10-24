@@ -4,21 +4,6 @@ Simulation of SPS flattop with beams generated in the generate_sps_beams.py scri
 Author: Birk Emil Karlsen-Baeck
 '''
 
-# Parse Arguments -----------------------------------------------------------------------------------------------------
-import argparse
-from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser
-
-parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), sps_llrf_argument_parser()],
-                                 description='Script to simulate beams in the SPS with intensity effects at flattop.',
-                                 add_help=True, prefix_chars='~')
-
-parser.add_argument('~~date', '~dte', type=str,
-                    help='Input date of the simulation; if none is parsed then todays date will be taken')
-
-args = parser.parse_args()
-
-beam_ID = args.beam_name
-
 # Imports -------------------------------------------------------------------------------------------------------------
 print('\nImporting...')
 import numpy as np
@@ -39,150 +24,186 @@ from blond.impedances.impedance_sources import InputTable
 
 from SPS.impedance_scenario import scenario, impedance2blond
 
-# Options -------------------------------------------------------------------------------------------------------------
-lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
-LXPLUS = True
-if 'birkkarlsen-baeck' in os.getcwd():
-    lxdir = '../'
-    LXPLUS = False
-    print('\nRunning locally...')
-else:
-    print('\nRunning in lxplus...')
 
-# Import Settings from Generation -------------------------------------------------------------------------------------
-with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml') as file:
-    gen_dict = yaml.full_load(file)
+def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
+    beam_ID = args.beam_name
 
-# Parameters ----------------------------------------------------------------------------------------------------------
-# Accelerator parameters
-C = 2 * np.pi * 1100.009                                # Machine circumference [m]
-p_s = 450e9                                             # Synchronous momentum [eV/c]
-h = 4620                                                # Harmonic number [-]
-gamma_t = 18.0                                          # Transition gamma [-]
-alpha = 1./gamma_t/gamma_t                              # First order mom. comp. factor [-]
-V = gen_dict['voltage 200 MHz'] * 1e6                   # 200 MHz RF voltage [V]
-V_800 = gen_dict['voltage 800 MHz (fraction)'] * V      # 800 MHz RF voltage [V]
-dphi = 0                                                # 200 MHz Phase modulation/offset [rad]
-dphi_800 = np.pi                                        # 800 MHz Phase modulation/offset [rad]
+    # Import Settings from Generation ----------------------------------------------------------------------------------
+    if generation_dict is None:
+        with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml') as file:
+            gen_dict = yaml.full_load(file)
+    else:
+        gen_dict = generation_dict
 
-# Cavity Controller parameters
-if args.g_ff_2 is None:
-    G_ff = [args.g_ff_1, args.g_ff_1]
-else:
-    G_ff = [args.g_ff_1, args.g_ff_2]
+    # Parameters -------------------------------------------------------------------------------------------------------
+    # Accelerator parameters
+    C = 2 * np.pi * 1100.009                                # Machine circumference [m]
+    p_s = 450e9                                             # Synchronous momentum [eV/c]
+    h = 4620                                                # Harmonic number [-]
+    gamma_t = 18.0                                          # Transition gamma [-]
+    alpha = 1./gamma_t/gamma_t                              # First order mom. comp. factor [-]
+    V = gen_dict['voltage 200 MHz'] * 1e6                   # 200 MHz RF voltage [V]
+    V_800 = gen_dict['voltage 800 MHz (fraction)'] * V      # 800 MHz RF voltage [V]
+    dphi = 0                                                # 200 MHz Phase modulation/offset [rad]
+    dphi_800 = np.pi                                        # 800 MHz Phase modulation/offset [rad]
 
-if args.g_llrf_2 is None:
-    G_llrf = [args.g_llrf_1, args.g_llrf_1]
-else:
-    G_llrf = [args.g_llrf_1, args.g_llrf_2]
+    # Cavity Controller parameters
+    if args.g_ff_2 is None:
+        G_ff = [args.g_ff_1, args.g_ff_1]
+    else:
+        G_ff = [args.g_ff_1, args.g_ff_2]
 
-if args.g_tx_2 is None:
-    G_tx = [args.g_tx_1, args.g_tx_1]
-else:
-    G_tx = [args.g_tx_1, args.g_tx_2]
+    if args.g_llrf_2 is None:
+        G_llrf = [args.g_llrf_1, args.g_llrf_1]
+    else:
+        G_llrf = [args.g_llrf_1, args.g_llrf_2]
 
-# Beam parameters
-N_p = gen_dict['bunch intensity']                       # Average bunch intensity [p/b]
-N_bunches = gen_dict['number of bunches']               # Total number of bunches
+    if args.g_tx_2 is None:
+        G_tx = [args.g_tx_1, args.g_tx_1]
+    else:
+        G_tx = [args.g_tx_1, args.g_tx_2]
 
-# Simulation parameters
-N_t = args.number_of_turns                              # Number of turns
-N_m = gen_dict['macroparticles per bunch']              # Number of macroparticles
-N_m *= N_bunches
-N_p *= N_bunches
-N_buckets = args.profile_length
+    # Beam parameters
+    N_p = gen_dict['bunch intensity']                       # Average bunch intensity [p/b]
+    N_bunches = gen_dict['number of bunches']               # Total number of bunches
 
-# Parameters for the SPS Impedance Model
-freqRes = 43.3e3                                        # Frequency resolution [Hz]
-modelStr = "futurePostLS2_SPS_noMain200TWC.txt"         # Name of Impedance Model
+    # Simulation parameters
+    N_t = args.number_of_turns                              # Number of turns
+    N_m = gen_dict['macroparticles per bunch']              # Number of macroparticles
+    N_m *= N_bunches
+    N_p *= N_bunches
+    N_buckets = args.profile_length
 
-# Objects -------------------------------------------------------------------------------------------------------------
-print('\nInitializing Objects...')
+    # Parameters for the SPS Impedance Model
+    freqRes = 43.3e3                                        # Frequency resolution [Hz]
+    modelStr = "futurePostLS2_SPS_noMain200TWC.txt"         # Name of Impedance Model
 
-# SPS Ring
-ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
+    # Objects ----------------------------------------------------------------------------------------------------------
+    print('\nInitializing Objects...')
 
-# RF Station
-rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
+    # SPS Ring
+    ring = Ring(C, alpha, p_s, Proton(), n_turns=N_t)
 
-# Beam
-ddt = 0 * rfstation.t_rf[0, 0]
-beam = Beam(ring, N_m, N_p)
-gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
-beam.dE = gen_beam[1, :]
-beam.dt = gen_beam[0, :] + ddt
+    # RF Station
+    rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
 
-# Profile
-profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5) + ddt,
-                  cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5) + ddt,
-                  n_slices=int(round(2 ** 7 * (1 + N_buckets)))))
+    # Beam
+    ddt = 0 * rfstation.t_rf[0, 0]
+    beam = Beam(ring, N_m, N_p)
+    if pre_beam is None:
+        gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
+    else:
+        gen_beam = pre_beam
 
-# Modify cuts of the Beam Profile
-beam.statistics()
-profile.cut_options.track_cuts(beam)
-profile.set_slices_parameters()
-profile.track()
+    beam.dE = gen_beam[1, :]
+    beam.dt = gen_beam[0, :] + ddt
 
-# SPS Impedance Model
-impScenario = scenario(modelStr)
-impModel = impedance2blond(impScenario.table_impedance)
+    # Profile
+    profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5) + ddt,
+                      cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5) + ddt,
+                      n_slices=int(round(2 ** 7 * (1 + N_buckets)))))
 
-impFreq = InducedVoltageFreq(beam, profile, impModel.impedanceList, freqRes)
-SPSimpedance_table = InputTable(impFreq.freq,
-                                impFreq.total_impedance.real*profile.bin_size,
-                                impFreq.total_impedance.imag*profile.bin_size)
-impedance_freq = InducedVoltageFreq(beam, profile, [SPSimpedance_table], frequency_resolution=freqRes)
-total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
-
-# SPS Cavity Controller
-Commissioning = SPSCavityLoopCommissioning(debug=False, open_loop=False, open_FB=False, open_drive=False,
-                                           open_FF=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
-CF = SPSCavityFeedback(rfstation, profile, Commissioning=Commissioning, post_LS2=True,
-                       G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx, a_comb=args.a_comb,
-                       V_part=args.v_part, turns=1000, df=0)
-
-# Tracker Object without SPS OTFB
-SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp,
-                                  CavityFeedback=CF, Profile=profile, interpolation=True)
-SPS_tracker = FullRingAndRF([SPS_rf_tracker])
-
-# Simulating ----------------------------------------------------------------------------------------------------------
-print('\nSimulating...')
-
-# Make simulation output folder
-if args.date is None:
-    today = date.today()
-    save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
-    if not os.path.isdir(save_to):
-        os.makedirs(save_to)
-else:
-    save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
-    if not os.path.isdir(save_to):
-        os.makedirs(save_to)
-
-# Setting diagnostics function
-diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
-                             setting=args.diag_setting, dt_cont=args.dt_cont,
-                             dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
-
-# Main for loop
-for i in range(N_t):
-    SPS_tracker.track()
+    # Modify cuts of the Beam Profile
+    beam.statistics()
+    profile.cut_options.track_cuts(beam)
+    profile.set_slices_parameters()
     profile.track()
-    total_imp.induced_voltage_sum()
 
-    diagnostics.track()
+    # SPS Impedance Model
+    impScenario = scenario(modelStr)
+    impModel = impedance2blond(impScenario.table_impedance)
 
-    if i == 0:
-        print('\nFor-loop successfully entered')
+    impFreq = InducedVoltageFreq(beam, profile, impModel.impedanceList, freqRes)
+    SPSimpedance_table = InputTable(impFreq.freq,
+                                    impFreq.total_impedance.real*profile.bin_size,
+                                    impFreq.total_impedance.imag*profile.bin_size)
+    impedance_freq = InducedVoltageFreq(beam, profile, [SPSimpedance_table], frequency_resolution=freqRes)
+    total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
+
+    # SPS Cavity Controller
+    Commissioning = SPSCavityLoopCommissioning(debug=False, open_loop=False, open_FB=False, open_drive=False,
+                                               open_FF=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
+    CF = SPSCavityFeedback(rfstation, profile, Commissioning=Commissioning, post_LS2=True,
+                           G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx, a_comb=args.a_comb,
+                           V_part=args.v_part, turns=1000, df=0)
+
+    # Tracker Object without SPS OTFB
+    SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp,
+                                      CavityFeedback=CF, Profile=profile, interpolation=True)
+    SPS_tracker = FullRingAndRF([SPS_rf_tracker])
+
+    # Simulating -------------------------------------------------------------------------------------------------------
+    print('\nSimulating...')
+
+    # Make simulation output folder
+    if args.date is None:
+        today = date.today()
+        save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+        if not os.path.isdir(save_to):
+            os.makedirs(save_to)
+    else:
+        save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
+        if not os.path.isdir(save_to):
+            os.makedirs(save_to)
+
+    # Setting diagnostics function
+    diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
+                                 setting=args.diag_setting, dt_cont=args.dt_cont,
+                                 dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
+
+    # Main for loop
+    for i in range(N_t):
+        SPS_tracker.track()
+        profile.track()
+        total_imp.induced_voltage_sum()
+
+        diagnostics.track()
+
+        if i == 0:
+            print('\nFor-loop successfully entered')
+
+    with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as file:
+        gen_dict['Turns simulated'] = N_t
+        document = yaml.dump(gen_dict, file)
+
+    return beam, profile, gen_dict
 
 
-with open(f'{lxdir}generated_beams/{beam_ID}/generation_settings.yaml', 'w') as file:
-    gen_dict['Turns simulated'] = N_t
-    document = yaml.dump(gen_dict, file)
+def main():
+    # Parse Arguments --------------------------------------------------------------------------------------------------
+    import argparse
+    from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser
 
-np.save(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy', np.array([beam.dt, beam.dE]))
-np.save(lxdir + f'generated_beams/{beam_ID}/simulated_profile.npy',
-        np.array([profile.bin_centers, profile.n_macroparticles * beam.ratio]))
-print('\nBeam Extracted!')
+    parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), sps_llrf_argument_parser()],
+                                     description='Script to simulate beams in the '
+                                                 'SPS with intensity effects at flattop.',
+                                     add_help=True, prefix_chars='~')
+
+    parser.add_argument('~~date', '~dte', type=str,
+                        help='Input date of the simulation; if none is parsed then todays date will be taken')
+
+    args = parser.parse_args()
+
+    # Options ----------------------------------------------------------------------------------------------------------
+    lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
+    LXPLUS = True
+    if 'birkkarlsen-baeck' in os.getcwd():
+        lxdir = '../'
+        LXPLUS = False
+        print('\nRunning locally...')
+    else:
+        print('\nRunning in lxplus...')
+
+    beam, profile, gen_dict = sps_simulation(args, LXPLUS, lxdir)
+
+    beam_ID = args.beam_name
+
+    np.save(lxdir + f'generated_beams/{beam_ID}/simulated_beam.npy', np.array([beam.dt, beam.dE]))
+    np.save(lxdir + f'generated_beams/{beam_ID}/simulated_profile.npy',
+            np.array([profile.bin_centers, profile.n_macroparticles * beam.ratio]))
+    print('\nBeam Extracted!')
+
+
+if __name__ == "__main__":
+    main()
