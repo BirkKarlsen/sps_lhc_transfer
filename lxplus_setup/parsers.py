@@ -44,8 +44,6 @@ def generation_argument_parser(add_help=False):
 
     parser.add_argument('~~beam_name', '~bn', type=str,
                         help='Option to give custom name to the beam; default is a name specified by the bunch parameters.')
-    parser.add_argument('~~input_file', '~if', type=str,
-                        help='Option to specify a file to take all the relevant generation parameters from.')
     parser.add_argument('~~custom_beam', '~cb', type=int, default=0,
                         help='Option to have custom distribution of bunch parameters from measurements.')
     parser.add_argument('~~custom_beam_dir', '~cbd', type=str,
@@ -163,6 +161,10 @@ def lhc_llrf_argument_parser(add_help=False):
                              'default is 0.')
     parser.add_argument('~~delta_frequency', '~df', type=float, default=0,
                         help='The detuning at the start of the simulation; default is 0')
+    parser.add_argument('~~clamping_thres', '~ct', type=float, default=300e3,
+                        help='The available power in klystron [W]; default is 300 kW')
+    parser.add_argument('~~clamp', '~cp', type=int, default=0,
+                        help='Option to enable power limitation; default is disabled (0)')
 
     # Parsers for the global feedback
     parser.add_argument('~~include_global', '~igl', type=int, default=0,
@@ -200,7 +202,7 @@ def lhc_llrf_argument_parser(add_help=False):
     return parser
 
 
-def generate_parsed_string(args, sim=False, machine='sps'):
+def generate_parsed_string(args, sim=False, machine='sps', n_master_parsers=2):
     arg_dict = vars(args)
     arg_str = ''
     arguments = list(arg_dict.keys())
@@ -221,10 +223,14 @@ def generate_parsed_string(args, sim=False, machine='sps'):
             if not sim:
                 arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
             else:
-                if machine == 'sps' and i < n_args - n_lhc - 2:
+                if machine == 'sps' and i < n_args - n_lhc - n_master_parsers:
                     arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
 
-                if machine == 'lhc' and (i < n_args - n_lhc - n_sps - 2 or i >= n_args - n_lhc - 2 and i < n_args - 2):
+                if machine == 'lhc' and (i < n_args - n_lhc - n_sps - n_master_parsers or
+                                         i >= n_args - n_lhc - n_master_parsers and i < n_args - n_master_parsers):
+                    arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
+
+                if machine == 'both' and i < n_args - n_master_parsers:
                     arg_str += f'~~{arguments[i]} {arg_dict[arguments[i]]} '
 
     return arg_str

@@ -61,13 +61,13 @@ if args.machine == 'sps':
     script_name = 'sps_flattop'
     stage_data = stage_data_for_simulation(args.beam_name,
                                            'bkarlsen', sps=True, lxplus=not disable)
-    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 else:
     script_name = 'lhc_injection'
     stage_data = stage_data_for_simulation(args.beam_name, 'bkarlsen',
                                            sps=False, simulated=args.simulated_beam, inj_sch=args.scheme,
                                            lxplus=not disable)
-    stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
+
+stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 
 
 bash_content = f'#!/bin/bash\n' \
