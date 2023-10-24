@@ -1,0 +1,29 @@
+# Scan of binomial distribution coming from the SPS
+# Simulation parameters
+beam_name: 'LHC_2023_hybrid_164b'
+number_of_turns: 10000
+diag_setting: 1
+# SPS parameters
+voltage_200: 9.4
+voltage_800: 0.18
+intensity: 1.58
+n_macroparticles: 1000000
+number_bunches: 164
+profile_length: 1000
+custom_beam: 1
+custom_beam_dir: '/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/generated_beams/LHC_2023_hybrid_164b/'
+exponent:
+  start: 1
+  stop: 5
+  steps: 11
+  scale: 'linear'
+# LHC parameters
+include_global: 1
+detuning_mu: -1e-3
+voltage: 5
+ramp: 455
+energy_error:
+  start: -50
+  stop: 50
+  steps: 21
+  scale: 'linear'
