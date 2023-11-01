@@ -1,0 +1,35 @@
+# Scan of uncaptured losses with beams based on operation in 2023 and the high-intensity MD in 2023.
+beam_name:
+  ['LHC_25ns_1.6e11_72b_mu1', 'LHC_25ns_1.6e11_72b_mu1.5', 'LHC_25ns_1.6e11_72b_mu4',
+  'LHC_25ns_2.0e11_72b_mu1', 'LHC_25ns_2.0e11_72b_mu1.5', 'LHC_25ns_2.0e11_72b_mu4']
+scheme: 'single_injection.yaml'
+profile_length: 2000
+number_of_turns: 50000  # [turn]
+diag_setting: 1
+dt_cont: 10             # [turn]
+dt_beam: 5000           # [turn]
+dt_cl: 5000             # [turn]
+dt_prfl: 2000           # [turn]
+dt_ld: 5000             # [turn]
+delta_frequency: 0      # TODO: Optimum pre-detuning
+loaded_q: 20000         # [-]
+detuning_mu: -1e-2
+ramp: 470.0             # [GeV]
+energy_error: 0         # TODO: find maximum energy error
+phase_error: 5          # [degrees]
+# Power configuration
+clamp: 1                # True -> clamping active
+clamping_thres:
+  start: 250e3          # [W]
+  stop: 300e3           # [W]
+  steps: 2
+  scale: 'linear'
+# A scan in voltage
+voltage:
+  start: 4.0            # [MV]
+  stop: 8.0             # [MV]
+  steps: 5
+  scale: 'linear'
+simulated_beam: 1
+include_global: 1
+flavour: 'nextweek'

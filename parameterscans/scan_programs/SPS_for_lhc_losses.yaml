@@ -1,0 +1,19 @@
+# Simulation of beams for the 2023 loss estimates with beams based on operation in 2023, the
+#  high-intensity MD in 2023 and projections for HL-LHC.
+beam_name:
+  ['LHC_25ns_1.6e11_72b_mu1', 'LHC_25ns_1.6e11_72b_mu1.5', 'LHC_25ns_1.6e11_72b_mu4',
+  'LHC_25ns_2.0e11_72b_mu1', 'LHC_25ns_2.0e11_72b_mu1.5', 'LHC_25ns_2.0e11_72b_mu4',
+  'LHC_25ns_2.3e11_72b_mu1', 'LHC_25ns_2.3e11_72b_mu1.5', 'LHC_25ns_2.3e11_72b_mu4']
+profile_length: 2000
+number_of_turns: 30000  # [turn]
+diag_setting: 1
+dt_cont: 10             # [turn]
+dt_beam: 5000           # [turn]
+dt_cl: 5000             # [turn]
+dt_prfl: 2000           # [turn]
+dt_ld: 5000             # [turn]
+# SPS LLRF setting
+g_llrf_1: 20
+v_part: 0.5403
+simulated_beam: 1
+flavour: 'testmatch'
