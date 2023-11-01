@@ -10,7 +10,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
                                  add_help=True, prefix_chars='~')
 
-parser.add_argument('~~scan_name', '~sn', type=str, default='LHC_capture_voltage_2.0e11.yaml',
+parser.add_argument('~~scan_name', '~sn', type=str, default='LHC_loss_estimate_2023.yaml',
                     help='Name of the parameter scan to turn.')
 
 args = parser.parse_args()
@@ -44,7 +44,7 @@ params = list(param_dict.keys())
 scans = []
 reg_params = {}
 for param in params:
-    if type(param_dict[param]) is dict:
+    if type(param_dict[param]) is dict or type(param_dict[param]) is list:
         scans.append(param)
     else:
         reg_params[param] = param_dict[param]
@@ -54,7 +54,9 @@ n_d = len(scans)
 
 scan_dict = {}
 for param in scans:
-    if param_dict[param]['scale'] == 'dB':
+    if type(param_dict[param]) is not dict:
+        scan_vals = param_dict[param]
+    elif param_dict[param]['scale'] == 'dB':
         scan_vals_dB = np.linspace(param_dict[param]['start'], param_dict[param]['stop'],
                                    param_dict[param]['steps'])
         scan_vals = to_linear(scan_vals_dB)
@@ -77,7 +79,10 @@ for arguments in itertools.product(*scan_dict.values()):
     sim_name_i = sim_folder_name + 'sim'
     sim_arg_i = ''
     for i, param in enumerate(scans):
-        sim_name_i += f'_{param}{arguments[i]:.3e}'
+        if type(arguments[i]) is str:
+            sim_name_i += f'_{param}{arguments[i]}'
+        else:
+            sim_name_i += f'_{param}{arguments[i]:.3e}'
         sim_arg_i += f'~~{param} {arguments[i]} '
 
     launch_string = f'python3 {lxdir}lxplus_setup/launch_simulation.py ' \
