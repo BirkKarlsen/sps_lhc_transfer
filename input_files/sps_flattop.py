@@ -41,7 +41,7 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     C = 2 * np.pi * 1100.009                                # Machine circumference [m]
     p_s = 450e9                                             # Synchronous momentum [eV/c]
     h = 4620                                                # Harmonic number [-]
-    gamma_t = 18.0                                          # Transition gamma [-]
+    gamma_t = 17.95                                         # Transition gamma [-]
     alpha = 1./gamma_t/gamma_t                              # First order mom. comp. factor [-]
     V = gen_dict['voltage 200 MHz'] * 1e6                   # 200 MHz RF voltage [V]
     V_800 = gen_dict['voltage 800 MHz (fraction)'] * V      # 800 MHz RF voltage [V]
