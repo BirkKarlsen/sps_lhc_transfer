@@ -67,7 +67,7 @@ def simulation_argument_parser(add_help=False):
                         help='Name of the simulation to be launched.')
 
     # Parsers for beam
-    parser.add_argument('~~beam_name', '~bn', type=str, default='BCMS_36b_1400e8_1600ps_7500kV_15percent',
+    parser.add_argument('~~beam_name', '~bn', type=str, default='LHC_25ns_1.6e11_mu1.5',
                         help='Option to give custom name to the beam; default is a name specified by the bunch '
                              'parameters.')
     parser.add_argument('~~profile_length', '~pl', type=int, default=1000,
@@ -161,6 +161,8 @@ def lhc_llrf_argument_parser(add_help=False):
                              'default is 0.')
     parser.add_argument('~~delta_frequency', '~df', type=float, default=0,
                         help='The detuning at the start of the simulation; default is 0')
+    parser.add_argument('~~pre_detune', '~pd', type=int, default=0,
+                        help='Option to enable pre-detuning of the RF cavities; default is False (0)')
     parser.add_argument('~~clamping_thres', '~ct', type=float, default=300e3,
                         help='The available power in klystron [W]; default is 300 kW')
     parser.add_argument('~~clamp', '~cp', type=int, default=0,
