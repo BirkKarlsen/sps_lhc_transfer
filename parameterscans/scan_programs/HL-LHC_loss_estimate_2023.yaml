@@ -10,11 +10,12 @@ dt_beam: 5000           # [turn]
 dt_cl: 5000             # [turn]
 dt_prfl: 2000           # [turn]
 dt_ld: 5000             # [turn]
-delta_frequency: 0      # TODO: Optimum pre-detuning
+pre_detune: 1           # Pre-detuning enabled
 loaded_q: 20000         # [-]
 detuning_mu: -1e-2
 ramp: 470.0             # [GeV]
-energy_error: 0         # TODO: find maximum energy error
+# SPS-LHC injection mismatch
+energy_error: 40        # [MeV]
 phase_error: 5          # [degrees]
 # Power configuration
 clamp: 1                # True -> clamping active
