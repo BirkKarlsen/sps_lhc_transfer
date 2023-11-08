@@ -127,23 +127,26 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         total_Vind = None
 
     # LHC Cavity Controller
-    RFFB = LHCCavityLoopCommissioning(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
-                                      power_thres=args.clamping_thres, clamping=bool(args.clamp))
-
-    CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
-                       f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
-                       Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
-
-    if bool(args.pre_detune):
-        CL.rf_beam_current()
-        df = LHCCavityLoop.half_detuning(np.max(np.abs(CL.I_BEAM_COARSE)),
-                                         CL.R_over_Q, rfstation.omega_rf[0, 0] / (2 * np.pi),
-                                         rfstation.voltage[0, 0] / 8)
-        print(f'Setting pre-detuning to {df/1e3:.3f} kHz')
+    if bool(args.include_local):
+        RFFB = LHCCavityLoopCommissioning(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
+                                          power_thres=args.clamping_thres, clamping=bool(args.clamp))
 
         CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
-                           f_c=rfstation.omega_rf[0, 0] / (2 * np.pi) + df,
+                           f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
                            Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
+
+        if bool(args.pre_detune):
+            CL.rf_beam_current()
+            df = LHCCavityLoop.half_detuning(np.max(np.abs(CL.I_BEAM_COARSE)),
+                                             CL.R_over_Q, rfstation.omega_rf[0, 0] / (2 * np.pi),
+                                             rfstation.voltage[0, 0] / 8)
+            print(f'Setting pre-detuning to {df/1e3:.3f} kHz')
+
+            CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
+                               f_c=rfstation.omega_rf[0, 0] / (2 * np.pi) + df,
+                               Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
+    else:
+        CL = None
 
     # LHC beam-phase loop and synchronization loop
     if args.pl_gain is None:

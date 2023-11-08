@@ -138,6 +138,8 @@ def lhc_llrf_argument_parser(add_help=False):
                                      prefix_chars='~')
 
     # Parsers for the LHC cavity loop
+    parser.add_argument('~~include_local', '~il', type=int, default=1,
+                        help='Option to include the cavity controller, default is True (1)')
     parser.add_argument('~~analog_gain', '~ga', type=float, default=6.79e-6,
                         help='Analog gain in the LHC RFFB; default is 6.79e-6 A/V')
     parser.add_argument('~~analog_delay', '~ta', type=float, default=170e-6,
