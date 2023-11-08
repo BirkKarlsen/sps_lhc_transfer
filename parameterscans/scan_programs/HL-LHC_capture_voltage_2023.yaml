@@ -3,7 +3,7 @@ beam_name:
   ['LHC_25ns_2.3e11_72b_mu1', 'LHC_25ns_2.3e11_72b_mu1.5', 'LHC_25ns_2.3e11_72b_mu4']
 scheme: 'single_injection.yaml'
 profile_length: 2000
-number_of_turns: 50000  # [turn]
+number_of_turns: 20000  # [turn]
 diag_setting: 1
 dt_cont: 10             # [turn]
 dt_beam: 5000           # [turn]
@@ -13,7 +13,6 @@ dt_ld: 5000             # [turn]
 pre_detune: 1           # Pre-detuning enabled
 loaded_q: 20000         # [-]
 detuning_mu: -1e-2
-ramp: 470.0             # [GeV]
 # SPS-LHC injection mismatch
 energy_error: 40        # [MeV]
 phase_error: 5          # [degrees]
@@ -28,9 +27,9 @@ clamping_thres:
 voltage:
   start: 4.0            # [MV]
   stop: 8.0             # [MV]
-  steps: 5
+  steps: 11
   scale: 'linear'
 simulated_beam: 1
 include_global: 1
 impedance_model: 'HL-LHC_450GeV.dat'
-flavour: 'nextweek'
+flavour: 'testmatch'
