@@ -2,7 +2,7 @@
 beam_name:
   ['LHC_25ns_1.6e11_72b_mu1', 'LHC_25ns_2.0e11_72b_mu1.5', 'LHC_25ns_2.3e11_72b_mu4']
 scheme: 'single_injection.yaml'
-profile_length: 2000
+profile_length: 1000
 number_of_turns: 10000  # [turn]
 diag_setting: 0
 dt_cont: 10             # [turn]
