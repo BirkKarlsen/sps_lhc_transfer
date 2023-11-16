@@ -5,7 +5,7 @@ beam_name:
 scheme: 'single_injection.yaml'
 profile_length: 2000
 number_of_turns: 10000  # [turn]
-diag_setting: 1
+diag_setting: 0
 dt_cont: 10             # [turn]
 dt_beam: 5000           # [turn]
 dt_cl: 5000             # [turn]
