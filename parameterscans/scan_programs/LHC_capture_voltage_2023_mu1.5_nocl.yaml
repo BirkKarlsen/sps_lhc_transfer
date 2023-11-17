@@ -1,6 +1,6 @@
 # Scan of uncaptured losses with beams based on operation in 2023 and the high-intensity MD in 2023.
 beam_name:
-  ['LHC_25ns_1.6e11_72b_mu1', 'LHC_25ns_2.0e11_72b_mu1.5', 'LHC_25ns_2.3e11_72b_mu4']
+  ['LHC_25ns_1.6e11_72b_mu1.5', 'LHC_25ns_2.0e11_72b_mu1.5', 'LHC_25ns_2.3e11_72b_mu1.5']
 scheme: 'single_injection.yaml'
 profile_length: 1000
 number_of_turns: 10000  # [turn]
