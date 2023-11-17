@@ -69,14 +69,13 @@ else:
 
 stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 
+# f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \ at second line
+# f'{stage_data}\n' \ after source .bashrc
 
 bash_content = f'#!/bin/bash\n' \
-               f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
-               f'{stage_data}\n' \
                f'python3 /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n' \
-               f'{stage_data_out}'
+               f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')
