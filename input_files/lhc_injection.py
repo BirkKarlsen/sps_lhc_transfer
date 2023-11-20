@@ -12,7 +12,6 @@ from scipy.constants import c
 import yaml
 from datetime import date
 
-import beam_dynamics_tools.analytical_functions.longitudinal_beam_dynamics as lbd
 from beam_dynamics_tools.simulation_functions.diagnostics.lhc_diagnostics import LHCDiagnostics
 from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
 from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml
@@ -101,7 +100,7 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     beam = Beam(ring, len(imported_beam[1, :]), N_p)
 
     ddt = 1000 * rfstation.t_rf[0, 0]
-    Dt = (((2 * np.pi * lbd.R_SPS)/(lbd.h_SPS * c * lbd.beta)) - rfstation.t_rf[0, 0])/2
+    Dt = (((2 * np.pi * 1100.009)/(4620 * c * ring.beta[0, 0])) - rfstation.t_rf[0, 0])/2
     beam.dE = imported_beam[1, :] + args.energy_error * 1e6
     beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
