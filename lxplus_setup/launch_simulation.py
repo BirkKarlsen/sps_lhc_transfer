@@ -74,9 +74,10 @@ stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulati
 
 bash_content = f'#!/bin/bash\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
-               f'which python3\n' \
-               f'python3 --version\n' \
-               f'python3 /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
+               f'which /eos/user/b/bkarlsen/packages/bin/python3\n' \
+               f'/eos/user/b/bkarlsen/packages/bin/python3 --version\n' \
+               f'/eos/user/b/bkarlsen/packages/bin/python3 ' \
+               f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
                f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if not disable:
