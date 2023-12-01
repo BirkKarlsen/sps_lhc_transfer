@@ -28,4 +28,4 @@ voltage:
   scale: 'linear'
 simulated_beam: 1
 include_global: 1
-flavour: 'tomorrow'
+flavour: 'testmatch'
