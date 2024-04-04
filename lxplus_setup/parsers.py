@@ -7,6 +7,108 @@ Author: Birk Emil Karlsen-Baeck
 import argparse
 
 
+def single_bunch_simulation_parser(add_help=False):
+    r'''
+    Parser for single-bunch simulations.
+
+    :param add_help:
+    :return:
+    '''
+
+    parser = argparse.ArgumentParser(description='Script to simulate single-bunch effects in the LHC.',
+                                     add_help=add_help, prefix_chars='~')
+
+    # General inputs
+    parser.add_argument('~~simulation_name', '~sm', type=str, default='test',
+                        help='Name of the simulation to be launched.')
+    parser.add_argument('~~date', '~dte', type=str,
+                        help='Input date of the simulation; if none is parsed then todays date will be taken')
+    parser.add_argument('~~generated_in', '~gi', type=str, default='SPS',
+                        help='Name of the CERN machine the bunch is generated in; default is the SPS')
+
+    # SPS inputs
+    parser.add_argument('~~voltage_200', '~v1', type=float, default=7.5,
+                        help='Voltage of the 200 MHz RF system [MV]; default is 7.5')
+    parser.add_argument('~~voltage_800', '~v2', type=float, default=0.15,
+                        help='Voltage of the 800 MHz RF system in fract of 200 MHz voltage; default is 0.15')
+
+    # Bunch generation inputs
+    parser.add_argument('~~intensity', '~in', type=float, default=1.4,
+                        help='Average intensity per bunch in units of 1e11; default is 1.4')
+    parser.add_argument('~~n_macroparticles', '~nm', type=float, default=1000000,
+                        help='Number of macroparticles per bunch; default is 1 million.')
+    parser.add_argument('~~exponent', '~ex', type=float, default=1.5,
+                        help='Binomial exponent for bunches; if passed all bunches have the same exponent; '
+                             'default is 1.5')
+    parser.add_argument('~~bunchlength', '~bl', type=float, default=1.6,
+                        help='Bunch length FWHM for the bunches; if passed all bunches have the same bunch length; '
+                             'default is 1.6 ns')
+
+    # Parsers for simulation
+    parser.add_argument('~~number_of_turns', '~nt', type=int, default=2000,
+                        help='Number of turns to track; default is 2000 turns')
+    parser.add_argument('~~diag_setting', '~ds', type=int, default=0, choices=[0, 1, 2],
+                        help='Different simulation diagnostics settings; default is 0')
+    parser.add_argument('~~dt_cont', '~dct', type=int, default=1,
+                        help='The turns between the continuous signals are sampled; default is every turn')
+    parser.add_argument('~~dt_beam', '~dbm', type=int, default=1000,
+                        help='The turns between beam parameters are measured; default is every 1000 turns')
+    parser.add_argument('~~dt_cl', '~dcl', type=int, default=1000,
+                        help='The turns between cavity controller signals are measured; default is every 1000 turns')
+    parser.add_argument('~~dt_prfl', '~dpr', type=int, default=500,
+                        help='The turns between repositioning the profile cuts; default is every 500 turns')
+    parser.add_argument('~~dt_ld', '~dld', type=int, default=100,
+                        help='The turns between measuring the beam line density; default is every 100 turns')
+
+    # Parsers for the global feedback
+    parser.add_argument('~~include_global', '~igl', type=int, default=0,
+                        help='Option to include phase and synchro loop in the simulations.')
+    parser.add_argument('~~pl_gain', '~plg', type=float,
+                        help='The beam-phase loop gain; default is 1/(5 T_rev).')
+    parser.add_argument('~~sl_gain', '~slg', type=float,
+                        help='The synchro loop gain; default is PL_gain/10.')
+
+    # Parsers for the LHC globally
+    parser.add_argument('~~voltage', '~vo', type=float, default=4,
+                        help='Voltage of the 400 MHz RF system [MV]; default is 4')
+    parser.add_argument('~~gamma_t', '~gt', type=float, default=53.606713,
+                        help='Transition gamma of the LHC; default is 53.606713')
+    parser.add_argument('~~energy_error', '~eer', type=float, default=0,
+                        help='Option to add energy offset [MeV] to initial batch; default is 0 MeV')
+    parser.add_argument('~~phase_error', '~per', type=float, default=0,
+                        help='Option to add phase offset [degrees] to initial batch; default is 0')
+    parser.add_argument('~~impedance_model', '~im', type=str,
+                        default='LHC_450GeV.dat',
+                        help='Option to choose which impedance model to use; default is standard LHC injection.')
+    parser.add_argument('~~include_impedance', '~iim', type=int, default=1,
+                        help='Option to include the impedance of the machine; default is to include it (1).')
+    parser.add_argument('~~ramp', '~r', type=float,
+                        help='Option to include a different final energy [GeV] and this a ramp in simulation; '
+                             'if nothing is passed then there will be no ramp.')
+    parser.add_argument('~~momentum_program', '~mp', type=str, default='LHC_momentum_programme_6.8TeV.csv',
+                        help='Option to choose the momentum program for the LHC default is the 6.8 TeV ramp')
+
+    # Sources of bunch blow-up
+    parser.add_argument('~~noise', '~ns', type=str, default='lhc_noise_fb.yaml',
+                        help='Option to include RF noise in the simulation; default is white noise generated at LHC '
+                             'flat-bottom')
+    parser.add_argument('~~intra_beam', '~ibs', type=int, default=0,
+                        help='Option to include intra-beam scattering in the simulation; default is False (0)')
+    parser.add_argument('~~update_ibs', '~upi', type=int, default=10000,
+                        help='Option to configure how often the IBS time constants are updated; '
+                             'default is every 10 000 turns')
+    parser.add_argument('~~twiss_file', '~twf', type=str, default='',
+                        help='Choose what twiss functions should be included in the simulation;'
+                             'default is ...')
+    parser.add_argument('~~emittance_x', '~emx', type=float, default=1.8e-6,
+                        help='Option to change the normalized horizontal transverse emittance; '
+                             'default is 1.8e-6 m')
+    parser.add_argument('~~emittance_y', '~emy', type=float, default=1.8e-6,
+                        help='Option to change the normalized vertical transverse emittance; '
+                             'default is 1.8e-6 m')
+
+    return parser
+
 def generation_argument_parser(add_help=False):
     r'''
     Parser for generation of beams in the SPS.
