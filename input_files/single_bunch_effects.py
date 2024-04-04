@@ -62,6 +62,7 @@ class SingleBunch:
         self.emit_y = None
 
     def set_sps_machine(self, args):
+        print("Setting SPS as machine")
         # SPS Machine Parameters --------------------------------------------------------------------------------------
         C = 2 * np.pi * 1100.009            # Machine circumference [m]
         p_s = 450e9                         # Synchronous momentum [eV/c]
@@ -81,6 +82,7 @@ class SingleBunch:
         self.rfstation = RFStation(self.ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
 
     def set_lhc_machine(self, args):
+        print("Setting LHC as machine")
         # LHC Machine Parameters --------------------------------------------------------------------------------------
         C = 26658.883                       # Machine circumference [m]
         p_s = 450e9                         # Synchronous momentum [eV/c]
@@ -113,6 +115,7 @@ class SingleBunch:
             self.injection_shift -= self.rfstation.t_rf[0, 0] / 2
 
     def set_beam(self):
+        print("Setting beam")
         beam_tmp = None
 
         # Store already existing beam temporarily
@@ -124,14 +127,16 @@ class SingleBunch:
 
         # Inject the beam if there was existing beam from before
         if beam_tmp is not None:
-            self.beam.dt = beam_tmp.dt
+            self.beam.dt = beam_tmp.dt - self.injection_shift
             self.beam.dE = beam_tmp.dE
 
-        self.profile = Profile(self.beam, CutOptions((-0.5) * self.rfstation.t_rf[0, 0],
-                                                     (1.5) * self.rfstation.t_rf[0, 0],
-                                                     2 * (2**7)))
+        self.profile = Profile(self.beam, CutOptions((-1.5) * self.rfstation.t_rf[0, 0],
+                                                     (2.5) * self.rfstation.t_rf[0, 0],
+                                                     4 * (2**7)))
+        self.profile.track()
 
     def construct_tracker(self):
+        print("Constructing tracker")
         # Initialize the RF tracker
         self.rf_tracker = RingAndRFTracker(self.rfstation, self.beam,
                                            BeamFeedback=self.beam_feedback,
@@ -153,6 +158,7 @@ class SingleBunch:
 
     def set_induced_voltage(self, model_str, machine="SPS"):
         if machine == "SPS":
+            print("Adding SPS impedance model")
             imp_scenario = scenario(model_str)
             imp_model = impedance2blond(imp_scenario.table_impedance)
             freq_res = 1 / self.rfstation.t_rev[0]
@@ -161,6 +167,7 @@ class SingleBunch:
             impedance_table = InputTable(imp_freq.freq, imp_freq.total_impedance.real * self.profile.bin_size,
                                          imp_freq.total_impedance.imag * self.profile.bin_size)
         else:
+            print("Adding LHC impedance model")
             f_r = 5e9
             freq_res = 1 / self.rfstation.t_rev[0]
 
@@ -173,6 +180,7 @@ class SingleBunch:
         self.induced_voltage = TotalInducedVoltage(self.beam, self.profile, [impedance_freq])
 
     def set_beam_feedback(self, args):
+        print("Adding beam control to the simulation...")
 
         if args.pl_gain is None:
             PL_gain = 1 / (5 * self.ring.t_rev[0])
@@ -192,6 +200,7 @@ class SingleBunch:
 
     def set_rf_noise(self, noise_file):
         # TODO: check implementation with Helga
+        print("Adding RF noise...")
 
         rf_noise = FlatSpectrum(self.ring, self.rfstation, delta_f=1.12455000e-02, fmin_s0=0,
                                 fmax_s0=1.1, seed1=1234, seed2=7564,
@@ -201,6 +210,7 @@ class SingleBunch:
         self.rfstation.phi_noise = np.array(rf_noise.dphi, ndmin=2)
 
     def set_intra_beam_scattering(self, twiss_file, emit_x, emit_y):
+        print("Adding intra-beam scattering...")
 
         twiss = prepareTwiss(twiss_file)
         twiss['slip'] = self.rfstation.eta_0[0]
@@ -212,11 +222,15 @@ class SingleBunch:
         self.intra_beam_scattering.set_beam_parameters(self.beam)
         self.intra_beam_scattering.set_optic_functions(twiss)
 
+        print(f"Intensity is {self.intra_beam_scattering.Npart / 1e11:.3f} x 10^11 protons")
+
     def set_injection_errors(self, energy_error, phase_error):
+        print(f"Add injection error of {energy_error:.3f} MeV and {phase_error:.3f} degrees...")
         self.beam.dE += energy_error * 1e6
         self.beam.dt += phase_error / 360 * self.rfstation.t_rf[0, 0]
 
     def set_simulation_diagnostics(self, args, save_to):
+        print("Setting LHC diagnostics")
         # Fetch injection scheme
         injection_scheme = fetch_from_yaml("single_injection.yaml", self.lxdir + 'injection_schemes/')
 
@@ -236,6 +250,7 @@ class SingleBunch:
                                                                                          self.emit_y,
                                                                                          1 / self.ring.f_rev[0])
 
+        self.profile.track()
         self.rf_tracker.track()
         self.diagnostics.track()
 
@@ -260,6 +275,17 @@ def main():
     else:
         print('\nRunning in lxplus...')
 
+    # Make simulation output folder
+    if args.date is None:
+        today = date.today()
+        save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+        if not os.path.isdir(save_to):
+            os.makedirs(save_to)
+    else:
+        save_to = lxdir + f'simulation_results/{args.date}/{args.simulation_name}/'
+        if not os.path.isdir(save_to):
+            os.makedirs(save_to)
+
     single_bunch = SingleBunch(args, lxdir, args.number_of_turns)
 
     # First generate the bunch
@@ -267,7 +293,7 @@ def main():
         single_bunch.set_sps_machine(args)
         single_bunch.set_beam()
         if args.include_impedance:
-            single_bunch.set_induced_voltage(freq_res=43.3e3, model_str="futurePostLS2_SPS_f1.txt",
+            single_bunch.set_induced_voltage(model_str="futurePostLS2_SPS_f1.txt",
                                              machine=args.generated_in)
     else:
         single_bunch.set_lhc_machine(args)
@@ -292,14 +318,16 @@ def main():
                                          machine='LHC')
 
     # Adding the beam feedback
-    single_bunch.set_beam_feedback(args)
+    if args.include_global:
+        single_bunch.set_beam_feedback(args)
 
     # Adding RF noise
-    single_bunch.set_rf_noise(args.noise)
+    if args.noise is not None:
+        single_bunch.set_rf_noise(args.noise)
 
     # Adding intra-beam scattering
     if args.intra_beam:
-        single_bunch.set_intra_beam_scattering(twiss_file=...,
+        single_bunch.set_intra_beam_scattering(twiss_file=lxdir + "twiss/" + args.twiss_file,
                                                emit_x=args.emittance_x,
                                                emit_y=args.emittance_y)
 
@@ -307,13 +335,17 @@ def main():
     single_bunch.construct_tracker()
 
     # Setting up the diagnostics for the simulation
-    single_bunch.set_simulation_diagnostics(args, args.save_to)
+    single_bunch.set_simulation_diagnostics(args, save_to)
 
+    print(f"Tracking for {args.number_of_turns}...")
     for i in range(args.number_of_turns):
-        single_bunch.track()
-
         if args.intra_beam and i % args.update_ibs == 0:
             single_bunch.update_intra_beam_scatter()
+
+        single_bunch.track()
+
+        if i == 0:
+            print("Reached main tracking loop...")
 
 
 if __name__ == "__main__":

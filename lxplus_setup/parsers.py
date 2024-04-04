@@ -80,7 +80,7 @@ def single_bunch_simulation_parser(add_help=False):
     parser.add_argument('~~impedance_model', '~im', type=str,
                         default='LHC_450GeV.dat',
                         help='Option to choose which impedance model to use; default is standard LHC injection.')
-    parser.add_argument('~~include_impedance', '~iim', type=int, default=1,
+    parser.add_argument('~~include_impedance', '~iim', type=int, default=0,
                         help='Option to include the impedance of the machine; default is to include it (1).')
     parser.add_argument('~~ramp', '~r', type=float,
                         help='Option to include a different final energy [GeV] and this a ramp in simulation; '
@@ -89,7 +89,7 @@ def single_bunch_simulation_parser(add_help=False):
                         help='Option to choose the momentum program for the LHC default is the 6.8 TeV ramp')
 
     # Sources of bunch blow-up
-    parser.add_argument('~~noise', '~ns', type=str, default='lhc_noise_fb.yaml',
+    parser.add_argument('~~noise', '~ns', type=str, default=None,
                         help='Option to include RF noise in the simulation; default is white noise generated at LHC '
                              'flat-bottom')
     parser.add_argument('~~intra_beam', '~ibs', type=int, default=0,
@@ -97,7 +97,7 @@ def single_bunch_simulation_parser(add_help=False):
     parser.add_argument('~~update_ibs', '~upi', type=int, default=10000,
                         help='Option to configure how often the IBS time constants are updated; '
                              'default is every 10 000 turns')
-    parser.add_argument('~~twiss_file', '~twf', type=str, default='',
+    parser.add_argument('~~twiss_file', '~twf', type=str, default='twiss_lhcb1.tfs',
                         help='Choose what twiss functions should be included in the simulation;'
                              'default is ...')
     parser.add_argument('~~emittance_x', '~emx', type=float, default=1.8e-6,
