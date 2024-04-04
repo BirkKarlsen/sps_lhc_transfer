@@ -9,7 +9,7 @@ exponent: 1.5
 bunchlength: 1.29
 # Tracking configuration
 number_of_turns: 3500000  # Number of turns corresponding to 5 minutes
-diag_setting: 2           # implement this setting
+diag_setting: 0           # implement this setting
 include_global:           # Including beam-phase loop
   [0, 1]
 # LHC settings
