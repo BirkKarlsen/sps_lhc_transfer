@@ -116,12 +116,17 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
     # Impedance model
     if bool(args.include_impedance):
-        n_necessary = 57418             # Necessary indices to keep when we want to resolve up to 50 GHz
-        imp_data = np.loadtxt(lxdir + 'impedance/' + args.impedance_model, skiprows=1)
-        imp_table = InputTable(imp_data[:n_necessary, 0], imp_data[:n_necessary, 1], imp_data[:n_necessary, 2])
+        f_r = 5e9
+        freq_res = 1 / rfstation.t_rev[0]
 
-        ind_volt_freq = InducedVoltageFreq(beam, profile, [imp_table])
-        total_Vind = TotalInducedVoltage(beam, profile, [ind_volt_freq])
+        imp_data = np.loadtxt(lxdir + 'impedance/' + args.impedance_model, skiprows=1)
+        imp_ind = imp_data[:, 0] < 2 * f_r
+        impedance_table = InputTable(imp_data[imp_ind, 0], imp_data[imp_ind, 1], imp_data[imp_ind, 2])
+
+        impedance_freq = InducedVoltageFreq(beam, profile, [impedance_table],
+                                            frequency_resolution=freq_res)
+
+        total_Vind = TotalInducedVoltage(beam, profile, [impedance_freq])
     else:
         total_Vind = None
 
