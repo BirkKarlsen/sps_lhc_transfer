@@ -1,0 +1,18 @@
+# First scan with RF noise to look at out-of-bucket loss as a function of bunch length
+# Bunch generation configuration
+generated_in: 'LHC'
+include_impedance: [1]    # Include the LHC impedance model
+# Beam parameters
+intensity: 1.1            # Single bunch intensity during test
+n_macroparticles: 1000000
+exponent: 1.5
+bunchlength: 1.29
+# Tracking configuration
+number_of_turns: 3500000  # Number of turns corresponding to 5 minutes
+diag_setting: 2           # implement this setting
+include_global: 0         # Including beam-phase loop
+# LHC settings
+voltage: 5                # [MV]
+# Blow-up effects
+noise: ...                # Include RF noise in the simulation
+intra_beam: 0             # Do not include IBS since it will be included through the RF noise
