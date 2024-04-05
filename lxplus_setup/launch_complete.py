@@ -64,7 +64,11 @@ stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulati
 bash_content = f'#!/bin/bash\n' \
                f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \
                f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
-               f'python3 /afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
+               f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
+               f'which /afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3\n' \
+               f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
+               f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
+               f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
                f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n' \
                f'{stage_data_out}'
 
