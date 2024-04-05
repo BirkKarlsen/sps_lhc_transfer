@@ -11,6 +11,11 @@ bunchlength: 1.29
 number_of_turns: 3500000  # Number of turns corresponding to 5 minutes
 diag_setting: 0           # implement this setting
 include_global: 0         # Including beam-phase loop
+dt_cont: 10               # The turns between the continuous signals are sampled
+dt_beam: 100000           # The turns between beam parameters are measured
+dt_cl: 100000             # The turns between cavity controller signals are measured
+dt_prfl: 1000000          # The turns between repositioning the profile cuts
+dt_ld: 1000               # The turns between measuring the beam line density
 # LHC settings
 voltage: 5                # [MV]
 # Blow-up effects
