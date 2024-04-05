@@ -26,3 +26,4 @@ ramp: 470                 # [GeV]
 # Blow-up effects
 noise: ...                # Include RF noise in the simulation
 intra_beam: 0             # Do not include IBS since it will be included through the RF noise
+flavour: 'nextweek'
