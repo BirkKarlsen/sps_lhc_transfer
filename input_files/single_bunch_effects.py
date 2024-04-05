@@ -241,6 +241,8 @@ class SingleBunch:
                                           injection_scheme=injection_scheme)
 
     def update_intra_beam_scatter(self):
+        self.beam.losses_separatrix(self.ring, self.rfstation)
+        self.beam.losses_longitudinal_cut(0., self.rfstation.t_rf[0, 0])
         self.intra_beam_scattering.calculate_longitudinal_kick(self.emit_x, self.emit_y, self.beam)
 
     def track(self):
