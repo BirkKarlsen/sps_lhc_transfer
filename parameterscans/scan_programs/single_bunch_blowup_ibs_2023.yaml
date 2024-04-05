@@ -1,12 +1,13 @@
 # First scan with RF noise to look at out-of-bucket loss as a function of bunch length
 # Bunch generation configuration
 generated_in: 'LHC'
-include_impedance: [0]    # Include the LHC impedance model
+include_impedance: 0    # Include the LHC impedance model
 # Beam parameters
 intensity: 1.1            # Single bunch intensity during test
 n_macroparticles: 1000000
 exponent: 1.5
-bunchlength: 1.29
+bunchlength:
+  [1.29, 1.35]
 # Tracking configuration
 number_of_turns: 3500000  # Number of turns corresponding to 5 minutes
 diag_setting: 0           # implement this setting
