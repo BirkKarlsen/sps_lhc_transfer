@@ -11,7 +11,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
                                  add_help=True, prefix_chars='~')
 
-parser.add_argument('~~scan_name', '~sn', type=str, default='single_bunch_blowup_test_2023.yaml',
+parser.add_argument('~~scan_name', '~sn', type=str, default='single_bunch_blowup_test_2024.yaml',
                     help='Name of the parameter scan to turn.')
 
 args = parser.parse_args()
