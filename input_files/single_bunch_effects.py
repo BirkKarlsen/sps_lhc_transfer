@@ -147,6 +147,7 @@ class SingleBunch:
         self.full_tracker = FullRingAndRF([self.rf_tracker])
 
     def generate_bunch(self, n_iterations):
+        print(f"Generating a {self.bunch_length * 1e9:.3f} ns bunch")
 
         matched_from_distribution_function(self.beam, self.full_tracker,
                                            TotalInducedVoltage=self.induced_voltage,
@@ -243,6 +244,7 @@ class SingleBunch:
     def update_intra_beam_scatter(self):
         self.beam.losses_separatrix(self.ring, self.rfstation)
         self.beam.losses_longitudinal_cut(0., self.rfstation.t_rf[0, 0])
+        self.intra_beam_scattering.set_beam_parameters(self.beam)
         self.intra_beam_scattering.calculate_longitudinal_kick(self.emit_x, self.emit_y, self.beam)
 
     def track(self):
