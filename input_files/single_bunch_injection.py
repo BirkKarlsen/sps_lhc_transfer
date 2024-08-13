@@ -161,6 +161,8 @@ class LHCInjection:
         self.beam.dt += phase_error / 360 * self.rfstation.t_rf[0, 0]
 
     def set_induced_voltage(self, model_str: str):
+        # TODO: add RF cavities
+
         f_r = 5e9
         freq_res = 1 / self.rfstation.t_rev[0]
         imp_data = np.loadtxt(self.lxdir + 'impedance/' + model_str, skiprows=1)
@@ -255,7 +257,7 @@ def main():
     )
 
     lhc_injection = LHCInjection(args, lxdir=lxdir)
-    injection_shift = ...
+    injection_shift = (lhc_injection.rfstation.t_rf[0, 0] - sps_generation.rfstation.t_rf[0, 0]) / 2
     lhc_injection.inject_beam(sps_generation.beam, injection_shift)
     lhc_injection.set_injection_errors(args.energy_error, args.phase_error)
 
