@@ -297,7 +297,7 @@ def main():
         if i % dt_int == 0:
             lhc_injection.compute_induced_voltage()
 
-        if i % dt_cont == 0:
+        if (i - 1) % dt_cont == 0:
             lhc_injection.compute_losses()
 
             evolution['time'][indx] = (i - 1) * lhc_injection.rfstation.t_rev[lhc_injection.rfstation.counter[0]]
@@ -315,7 +315,10 @@ def main():
 
         if i % dt_beam == 0:
             df = pd.DataFrame(evolution)
-            df.to_hdf(save_to + 'output.b5', 'Beam')
+            df.to_hdf(save_to + 'output.h5', 'Beam')
+
+    df = pd.DataFrame(evolution)
+    df.to_hdf(save_to + 'output.h5', 'Beam')
 
 
 if __name__ == "__main__":
