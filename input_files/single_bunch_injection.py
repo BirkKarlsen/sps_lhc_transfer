@@ -1,18 +1,10 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
-import os
-import sys
-import time
-import yaml
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import os
 from datetime import date
-
-from scipy.constants import c
 
 from blond.beam.beam import Beam, Proton
 from blond.input_parameters.ring import Ring
