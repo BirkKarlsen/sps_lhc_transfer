@@ -132,7 +132,7 @@ class LHCInjection:
 
         # Set up Ring and RF Station
         # LHC Ring
-        self.ring = Ring(self.C, alpha, self.p_s, Proton(), n_turns=1)
+        self.ring = Ring(self.C, alpha, self.p_s, Proton(), n_turns=self.N_t)
 
         # RF Station
         self.rfstation = RFStation(
