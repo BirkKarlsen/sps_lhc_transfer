@@ -10,6 +10,7 @@ import numpy as np
 import os
 import yaml
 from datetime import date
+from tqdm import tqdm
 
 from beam_dynamics_tools.simulation_functions.diagnostics.lhc_diagnostics import LHCDiagnostics
 from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
@@ -18,7 +19,7 @@ from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml
 
 from blond.beam.beam import Beam, Proton
 from blond.beam.distributions import matched_from_distribution_function
-from blond.beam.profile import Profile, CutOptions
+from blond.beam.profile import Profile, CutOptions, FitOptions
 from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
@@ -130,9 +131,11 @@ class SingleBunch:
             self.beam.dt = beam_tmp.dt - self.injection_shift
             self.beam.dE = beam_tmp.dE
 
-        self.profile = Profile(self.beam, CutOptions((-1.5) * self.rfstation.t_rf[0, 0],
-                                                     (2.5) * self.rfstation.t_rf[0, 0],
-                                                     4 * (2**7)))
+        self.profile = Profile(self.beam,
+                               CutOptions((-1.5) * self.rfstation.t_rf[0, 0],
+                                           (2.5) * self.rfstation.t_rf[0, 0],
+                                           4 * (2**7)),
+                               FitOptions(fit_option='rms'))
         self.profile.track()
 
     def construct_tracker(self):
@@ -245,7 +248,10 @@ class SingleBunch:
         self.beam.losses_separatrix(self.ring, self.rfstation)
         self.beam.losses_longitudinal_cut(0., self.rfstation.t_rf[0, 0])
         self.intra_beam_scattering.set_beam_parameters(self.beam)
-        self.intra_beam_scattering.calculate_longitudinal_kick(self.emit_x, self.emit_y, self.beam)
+        print(f'New IBS intensity is {self.intra_beam_scattering.Npart} protons')
+        self.profile.track()
+        self.intra_beam_scattering.calculate_longitudinal_kick(self.emit_x, self.emit_y,
+                                                               self.beam, self.profile)
 
     def track(self):
         if self.intra_beam_scattering is not None:
@@ -342,8 +348,9 @@ def main():
     single_bunch.set_simulation_diagnostics(args, save_to)
 
     print(f"Tracking for {args.number_of_turns}...")
-    for i in range(args.number_of_turns):
+    for i in tqdm(range(args.number_of_turns), disable=LXPLUS):
         if args.intra_beam and i % args.update_ibs == 0:
+            print(f"Turn {i}")
             single_bunch.update_intra_beam_scatter()
 
         single_bunch.track()
