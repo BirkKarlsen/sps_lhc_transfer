@@ -1,0 +1,32 @@
+# First scan with RF noise to look at out-of-bucket loss as a function of bunch length
+# Bunch generation configuration
+generated_in: 'LHC'
+include_impedance: 1        # Include the LHC impedance model
+# Beam parameters
+intensity: 2.3              # Operational LHC intensity during 2023
+n_macroparticles: 1000000
+exponent: 1.5
+bunchlength:
+  start: 1.4                # [ns]
+  stop: 1.9                 # [ns]
+  steps: 6                  # A scan in bunch length to look at losses as a function of bunch length
+  scale: 'linear'
+phase_error:
+  start: 0                  # [deg]
+  stop: 50                  # [deg]
+  steps: 6
+  scale: 'linear'
+# Tracking configuration
+number_of_turns: 500000     # Number of turns corresponding to 5 minutes
+include_global: 0           # Including beam-phase loop
+dt_cont: 10                 # The turns between the continuous signals are sampled
+dt_beam: 100000             # The turns between beam parameters are measured
+dt_int: 2                   # The turns between calculating the beam induced voltage
+# LHC settings
+voltage:
+  start: 4                  # [MV]
+  stop: 9                   # [MV]
+  steps: 6
+  scale: 'linear'
+# HT condor settings
+flavour: 'tomorrow'

@@ -53,7 +53,7 @@ inputs = generate_parsed_string(args, sim=True, machine='both', n_master_parsers
 if disable:
     print(inputs)
 
-script_name = 'single_bunch_effects'
+script_name = 'single_bunch_injection'
 stage_data_out = stage_out_simulation_results(save_to, 'bkarlsen', args.simulation_name)
 
 # f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \ at second line
