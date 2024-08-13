@@ -59,6 +59,8 @@ def single_bunch_simulation_parser(add_help=False):
                         help='The turns between repositioning the profile cuts; default is every 500 turns')
     parser.add_argument('~~dt_ld', '~dld', type=int, default=100,
                         help='The turns between measuring the beam line density; default is every 100 turns')
+    parser.add_argument('~~dt_int', '~dint', type=int, default=1,
+                        help='The turns between calculating the beam induced voltage; default is every turn')
 
     # Parsers for the global feedback
     parser.add_argument('~~include_global', '~igl', type=int, default=0,
