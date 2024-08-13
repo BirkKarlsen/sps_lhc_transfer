@@ -24,7 +24,7 @@ class SPSGeneration:
     C = 2 * np.pi * 1100.009  # Machine circumference [m]
     p_s = 450e9  # Synchronous momentum [eV/c]
     h = 4620  # Harmonic number [-]
-    gamma_t = 18.0  # Transition gamma [-]
+    gamma_t = 17.95  # Transition gamma [-]
     alpha = 1. / gamma_t / gamma_t  # First order mom. comp. factor [-]
 
     dphi = 0  # 200 MHz Phase modulation/offset [rad]
