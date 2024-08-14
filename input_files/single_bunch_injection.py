@@ -12,11 +12,14 @@ from blond.input_parameters.rf_parameters import RFStation
 from blond.beam.profile import CutOptions, FitOptions, Profile
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.beam.distributions import matched_from_distribution_function
-from blond.impedances.impedance_sources import InputTable
+from blond.impedances.impedance_sources import InputTable, Resonators
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from blond.llrf.beam_feedback import BeamFeedback
 from blond.llrf.rf_noise import FlatSpectrum
+
 from SPS.impedance_scenario import scenario, impedance2blond
+
+from beam_dynamics_tools.analytical_functions.transfer_functions import H_a, H_d, Z_cl
 
 
 class SPSGeneration:
@@ -161,16 +164,53 @@ class LHCInjection:
         self.beam.dt += phase_error / 360 * self.rfstation.t_rf[0, 0]
 
     def set_induced_voltage(self, model_str: str):
-        # TODO: add RF cavities
-
         f_r = 5e9
-        freq_res = 1 / self.rfstation.t_rev[0]
+        freq_res = 1 / self.rfstation.t_rev[0] / 4
+
         imp_data = np.loadtxt(self.lxdir + 'impedance/' + model_str, skiprows=1)
         imp_ind = imp_data[:, 0] < 2 * f_r
         impedance_table = InputTable(imp_data[imp_ind, 0], imp_data[imp_ind, 1], imp_data[imp_ind, 2])
 
-        impedance_freq = InducedVoltageFreq(self.beam, self.profile, [impedance_table],
-                                            frequency_resolution=freq_res)
+        impedance_list = [impedance_table]
+
+        if "noRF" in model_str:
+            print("Added RF cavities...")
+            G_a = 6.79e-6  # Analog FB gain [A/V]
+            G_d = 10  # Digital FB gain [-]
+            tau_loop = 650e-9  # Overall loop delay [s]
+            tau_a = 170e-6  # Analog FB delay [s]
+            tau_d = 400e-6  # Digital FB delay [s]
+            Q_L = 20000  # Loaded Quality factor [-]
+            delta_f = -3480
+
+            cavity = Resonators(45 * Q_L, self.rfstation.omega_rf[0, 0] / (2 * np.pi) + delta_f, Q_L)
+
+            ind_freq = InducedVoltageFreq(
+                self.beam, self.profile,
+                [cavity],
+                frequency_resolution=freq_res
+            )
+
+            freq = ind_freq.freq
+            ind_freq.sum_impedances(freq)
+
+            freq = freq - self.rfstation.omega_rf[0, 0] / (2 * np.pi)
+            f_rf = self.rfstation.omega_rf[0, 0] / (2 * np.pi)
+            h_d = lambda f: H_d(f, G_a, G_d, tau_d, 0)
+            h_a = lambda f: H_a(f, G_a, tau_a)
+            z_cav = ind_freq.total_impedance * self.profile.bin_size
+            z_cl = Z_cl(freq, h_a, h_d, z_cav, tau_loop)
+            freq = ind_freq.freq
+
+            input_table = InputTable(freq, 8 * z_cl.real, 8 * z_cl.imag)
+            impedance_list.append(input_table)
+
+        impedance_freq = InducedVoltageFreq(
+            self.beam, self.profile,
+            impedance_list,
+            frequency_resolution=freq_res
+        )
+
         self.induced_voltage = TotalInducedVoltage(self.beam, self.profile, [impedance_freq])
 
     def set_beam_feedback(self, args):
@@ -212,10 +252,10 @@ class LHCInjection:
                                            Profile=self.profile)
 
     def compute_losses(self):
-        pass
+        self.beam.losses_separatrix(self.ring, self.rfstation)
 
     def compute_induced_voltage(self):
-        pass
+        self.induced_voltage.induced_voltage_sum()
 
     def track(self):
         self.rf_tracker.track()
