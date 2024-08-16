@@ -21,5 +21,5 @@ voltage_800: 0.165
 # LHC settings
 voltage: 5                  # [MV]
 # HT condor settings
-flavour: 'tomorrow'
+flavour: 'longlunch'        # job should be much longer
 run_gpu: 1
