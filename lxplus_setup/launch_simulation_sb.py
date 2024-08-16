@@ -51,7 +51,7 @@ print(f'\nGenerating bash and submission file for {file_name}...')
 if not disable:
     os.system(f'touch {bash_dir}{bash_file_name}')
 
-inputs = generate_parsed_string(args, sim=True, machine='both', n_master_parsers=1)
+inputs = generate_parsed_string(args, sim=True, machine='both', n_master_parsers=2)
 
 if disable:
     print(inputs)
