@@ -13,6 +13,8 @@ parser = argparse.ArgumentParser(description='Script to launch a parameter scan 
 
 parser.add_argument('~~scan_name', '~sn', type=str, default='single_bunch_blowup_test_2024.yaml',
                     help='Name of the parameter scan to turn.')
+parser.add_argument('~~run_gpu', '~gpu', type=int, default=0,
+                    help='Option to run the simulation on a GPU; default is False (0)')
 
 args = parser.parse_args()
 
@@ -87,7 +89,7 @@ for arguments in itertools.product(*scan_dict.values()):
         sim_arg_i += f'~~{param} {arguments[i]} '
 
     launch_string = f'python3 {lxdir}lxplus_setup/launch_simulation_sb.py ' \
-                    f'~sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
+                    f'~sm {sim_name_i} ~gpu {args.run_gpu} {sim_arg_i}{fixed_arguments}'
 
     if LXPLUS:
         os.system(launch_string)
