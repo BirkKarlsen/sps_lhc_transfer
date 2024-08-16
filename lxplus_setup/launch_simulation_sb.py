@@ -25,7 +25,7 @@ job_flavours = ['espresso',         # 20 minutes
                 'nextweek']         # 1 week
 parser.add_argument('~~flavour', '~f', type=str, choices=job_flavours, default='testmatch',
                     help='Length of allocated for the simulaton; default is testmatch (3 days)')
-parser.add_argument('~~run_gpu', '~gpu', type=int, default=0,
+parser.add_argument('~~as_gpu', '~agpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
 
 

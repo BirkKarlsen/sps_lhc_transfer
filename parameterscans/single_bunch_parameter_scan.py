@@ -89,7 +89,7 @@ for arguments in itertools.product(*scan_dict.values()):
         sim_arg_i += f'~~{param} {arguments[i]} '
 
     launch_string = f'python3 {lxdir}lxplus_setup/launch_simulation_sb.py ' \
-                    f'~sm {sim_name_i} ~gpu {args.run_gpu} {sim_arg_i}{fixed_arguments}'
+                    f'~sm {sim_name_i} ~agpu {args.run_gpu} {sim_arg_i}{fixed_arguments}'
 
     if LXPLUS:
         os.system(launch_string)
