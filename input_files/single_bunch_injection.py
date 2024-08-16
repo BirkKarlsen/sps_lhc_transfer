@@ -16,10 +16,29 @@ from blond.impedances.impedance_sources import InputTable, Resonators
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from blond.llrf.beam_feedback import BeamFeedback
 from blond.llrf.rf_noise import FlatSpectrum
+import blond.utils.bmath as bm
 
 from SPS.impedance_scenario import scenario, impedance2blond
 
 from beam_dynamics_tools.analytical_functions.transfer_functions import H_a, H_d, Z_cl
+
+
+def prepare_gpu_simulation(obj):
+    import cupy as cp
+
+    dev = cp.cuda.Device(0)
+    comp_capability = dev.compute_capability
+    print(f"Compute capability: {comp_capability}")
+    bm.use_gpu()
+
+    def convert_to_gpu(obj) -> None:
+        gpu_call = getattr(obj, "to_gpu", None)
+        if callable(gpu_call):
+            gpu_call()
+
+    objects_in_sim = obj.__dict__
+    for key, value in objects_in_sim.items():
+        convert_to_gpu(value)
 
 
 class SPSGeneration:
@@ -72,7 +91,7 @@ class SPSGeneration:
                                FitOptions(fit_option='fwhm'))
         self.profile.track()
 
-    def generate_bunch(self, n_iterations, args, impedance_model="futurePostLS2_SPS_f1.txt"):
+    def prepare_generation_bunch(self, args, impedance_model="futurePostLS2_SPS_f1.txt"):
         self.exponent = args.exponent
         self.bunch_length = args.bunchlength * 1e-9
 
@@ -97,6 +116,7 @@ class SPSGeneration:
         # Initialize the Full Ring and RF tracker
         self.full_tracker = FullRingAndRF([self.rf_tracker])
 
+    def run_generation(self, n_iterations):
         print(f"Generating a {self.bunch_length * 1e9:.3f} ns bunch")
         matched_from_distribution_function(self.beam, self.full_tracker,
                                            TotalInducedVoltage=self.induced_voltage,
@@ -105,6 +125,9 @@ class SPSGeneration:
                                            distribution_type="binomial",
                                            distribution_exponent=self.exponent,
                                            n_iterations=n_iterations)
+
+    def simulate_on_gpu(self) -> None:
+        prepare_gpu_simulation(self)
 
 
 class LHCInjection:
@@ -165,7 +188,7 @@ class LHCInjection:
 
     def set_induced_voltage(self, model_str: str):
         f_r = 5e9
-        freq_res = 1 / self.rfstation.t_rev[0] / 4
+        freq_res = 1 / self.rfstation.t_rev[0] / 2
 
         imp_data = np.loadtxt(self.lxdir + 'impedance/' + model_str, skiprows=1)
         imp_ind = imp_data[:, 0] < 2 * f_r
@@ -195,7 +218,6 @@ class LHCInjection:
             ind_freq.sum_impedances(freq)
 
             freq = freq - self.rfstation.omega_rf[0, 0] / (2 * np.pi)
-            f_rf = self.rfstation.omega_rf[0, 0] / (2 * np.pi)
             h_d = lambda f: H_d(f, G_a, G_d, tau_d, 0)
             h_a = lambda f: H_a(f, G_a, tau_a)
             z_cav = ind_freq.total_impedance * self.profile.bin_size
@@ -261,12 +283,16 @@ class LHCInjection:
         self.rf_tracker.track()
         self.profile.track()
 
+    def simulate_on_gpu(self) -> None:
+        prepare_gpu_simulation(self)
+
 
 def main():
     # Parse Arguments --------------------------------------------------------------------------------------------------
     from lxplus_setup.parsers import single_bunch_simulation_parser
 
     parser = single_bunch_simulation_parser(add_help=True)
+
     args = parser.parse_args()
 
     # Options ----------------------------------------------------------------------------------------------------------
@@ -290,12 +316,18 @@ def main():
         if not os.path.isdir(save_to):
             os.makedirs(save_to)
 
+    # Generate SPS bunch
     sps_generation = SPSGeneration(args)
     sps_generation.set_profile(args)
-    sps_generation.generate_bunch(
-        n_iterations=50, args=args
-    )
+    sps_generation.prepare_generation_bunch(args=args)
 
+    # Converting all the code run on a GPU
+    if bool(args.run_gpu):
+        sps_generation.simulate_on_gpu()
+
+    sps_generation.run_generation(n_iterations=50)
+
+    # LHC injection
     lhc_injection = LHCInjection(args, lxdir=lxdir)
     injection_shift = (lhc_injection.rfstation.t_rf[0, 0] - sps_generation.rfstation.t_rf[0, 0]) / 2
     lhc_injection.inject_beam(sps_generation.beam, injection_shift)
@@ -313,6 +345,10 @@ def main():
 
     # Constructing the tracker
     lhc_injection.construct_tracker()
+
+    # Converting all the code run on a GPU
+    if bool(args.run_gpu):
+        lhc_injection.simulate_on_gpu()
 
     dt_int = args.dt_int
     dt_cont = args.dt_cont

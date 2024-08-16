@@ -25,6 +25,8 @@ def single_bunch_simulation_parser(add_help=False):
                         help='Input date of the simulation; if none is parsed then todays date will be taken')
     parser.add_argument('~~generated_in', '~gi', type=str, default='SPS',
                         help='Name of the CERN machine the bunch is generated in; default is the SPS')
+    parser.add_argument('-gpu', '--run_gpu', type=int, default=0,
+                        help='Option to run the simulation on a GPU; default is False (0)')
 
     # SPS inputs
     parser.add_argument('~~voltage_200', '~v1', type=float, default=7.5,
