@@ -2,7 +2,7 @@
 # Bunch generation configuration
 generated_in: 'SPS'
 include_impedance: 1        # Include the LHC impedance model
-impedance_model: 'LHC_450GeV_noRF_2024_june.dat'
+impedance_model: 'LHC_450GeV_2024_june.dat'
 # Beam parameters
 intensity: 2.3              # Operational LHC intensity during 2023
 n_macroparticles: 1000000
