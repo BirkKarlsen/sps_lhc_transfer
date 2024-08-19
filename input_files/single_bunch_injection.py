@@ -272,7 +272,8 @@ class LHCInjection:
         self.rf_tracker = RingAndRFTracker(self.rfstation, self.beam,
                                            BeamFeedback=self.beam_feedback,
                                            TotalInducedVoltage=self.induced_voltage,
-                                           Profile=self.profile)
+                                           Profile=self.profile,
+                                           interpolation=True)
 
     def compute_losses(self):
         self.beam.losses_separatrix(self.ring, self.rfstation)
