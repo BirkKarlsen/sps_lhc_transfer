@@ -171,7 +171,7 @@ class LHCInjection:
         self.profile = Profile(self.beam,
                                CutOptions(-1.5 * self.rfstation.t_rf[0, 0],
                                           2.5 * self.rfstation.t_rf[0, 0],
-                                          4 * (2 ** 7)),
+                                          4 * (2 ** 6)),
                                FitOptions(fit_option='fwhm'))
         self.profile.track()
 
@@ -188,7 +188,7 @@ class LHCInjection:
 
     def set_induced_voltage(self, model_str: str):
         f_r = 5e9
-        freq_res = 1 / self.rfstation.t_rev[0] / 2
+        freq_res = 1 / self.rfstation.t_rev[0] / 1
 
         imp_data = np.loadtxt(self.lxdir + 'impedance/' + model_str, skiprows=1)
         imp_ind = imp_data[:, 0] < 2 * f_r
@@ -320,12 +320,7 @@ def main():
     sps_generation = SPSGeneration(args)
     sps_generation.set_profile(args)
     sps_generation.prepare_generation_bunch(args=args)
-
-    # Converting all the code run on a GPU
-    if bool(args.run_gpu):
-        sps_generation.simulate_on_gpu()
-
-    sps_generation.run_generation(n_iterations=50)
+    sps_generation.run_generation(n_iterations=30)
 
     # LHC injection
     lhc_injection = LHCInjection(args, lxdir=lxdir)
