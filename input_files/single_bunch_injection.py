@@ -187,6 +187,7 @@ class LHCInjection:
         self.beam.dt += phase_error / 360 * self.rfstation.t_rf[0, 0]
 
     def set_induced_voltage(self, model_str: str):
+        print(f'Adding induced voltage...')
         f_r = 5e9
         freq_res = 1 / self.rfstation.t_rev[0] / 1
 
