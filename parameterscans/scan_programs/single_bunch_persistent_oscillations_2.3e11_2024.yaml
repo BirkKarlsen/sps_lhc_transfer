@@ -33,5 +33,5 @@ voltage:
   steps: 6
   scale: 'linear'
 # HT condor settings
-flavour: 'tomorrow'
+flavour: 'longlunch'
 run_gpu: 1

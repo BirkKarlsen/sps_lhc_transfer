@@ -7,8 +7,8 @@ impedance_model: 'LHC_450GeV_2024_june.dat'
 intensity: 2.3              # Operational LHC intensity during 2023
 n_macroparticles: 1000000
 exponent: 1.5
-bunchlength: 1.3           # [ns]
-phase_error: 0              # [deg]
+bunchlength: 1.3            # [ns]
+phase_error: 20             # [deg]
 # Tracking configuration
 number_of_turns: 500000     # Number of turns corresponding to 5 minutes
 include_global: 0           # Including beam-phase loop

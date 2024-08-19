@@ -176,6 +176,7 @@ class LHCInjection:
         self.profile.track()
 
     def inject_beam(self, beam: Beam, injection_shift: float):
+        print(f'Injected beam with {beam.n_macroparticles} macro particles and {beam.intensity} protons')
         self.beam = Beam(self.ring, beam.n_macroparticles, beam.intensity)
 
         self.beam.dE[:] = beam.dE[:]
