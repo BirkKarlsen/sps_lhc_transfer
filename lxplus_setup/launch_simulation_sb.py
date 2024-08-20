@@ -27,6 +27,8 @@ parser.add_argument('~~flavour', '~f', type=str, choices=job_flavours, default='
                     help='Length of allocated for the simulaton; default is testmatch (3 days)')
 parser.add_argument('~~as_gpu', '~agpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
+parser.add_argument('~~scan', '~sc', type=int, default=0,
+                    help='Flag to run as a part of a scan or as a single simualtion; default is single simulation (0)')
 
 
 args = parser.parse_args()
@@ -51,7 +53,7 @@ print(f'\nGenerating bash and submission file for {file_name}...')
 if not disable:
     os.system(f'touch {bash_dir}{bash_file_name}')
 
-inputs = generate_parsed_string(args, sim=True, machine='both', n_master_parsers=2)
+inputs = generate_parsed_string(args, sim=True, machine='both', n_master_parsers=3)
 
 if disable:
     print(inputs)
@@ -76,27 +78,28 @@ if not disable:
 else:
     print(bash_content)
 
-# Submission file
-if not disable:
-    os.system(f'touch {sub_dir}{sub_file_name}')
+if bool(args.scan):
+    # Submission file
+    if not disable:
+        os.system(f'touch {sub_dir}{sub_file_name}')
 
-if bool(args.run_gpu):
-    additional_string = 'request_gpus = 1\n'
-else:
-    additional_string = ''
+    if bool(args.run_gpu):
+        additional_string = 'request_gpus = 1\n'
+    else:
+        additional_string = ''
 
-sub_content = f'executable = {bash_dir}{bash_file_name}\n' \
-              f'arguments = \$(ClusterId)\$(ProcId)\n' \
-              f'output = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).out\n' \
-              f'error = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).err\n' \
-              f'log = {bash_dir}{file_name}.\$(ClusterId).log\n' \
-              f'+JobFlavour = \\"{args.flavour}\\"\n' \
-              f'queue'
+    sub_content = f'executable = {bash_dir}{bash_file_name}\n' \
+                  f'arguments = \$(ClusterId)\$(ProcId)\n' \
+                  f'output = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).out\n' \
+                  f'error = {bash_dir}{file_name}.\$(ClusterId)\$(ProcId).err\n' \
+                  f'log = {bash_dir}{file_name}.\$(ClusterId).log\n' \
+                  f'+JobFlavour = \\"{args.flavour}\\"\n' \
+                  f'queue'
 
-sub_content = additional_string + sub_content
+    sub_content = additional_string + sub_content
 
-if not disable:
-    os.system(f'echo "{sub_content}" > {sub_dir}{sub_file_name}')
-    os.system(f'chmod a+x {sub_dir}{sub_file_name}')
+    if not disable:
+        os.system(f'echo "{sub_content}" > {sub_dir}{sub_file_name}')
+        os.system(f'chmod a+x {sub_dir}{sub_file_name}')
 
-    os.system(f'condor_submit {sub_dir}{sub_file_name}')
+        os.system(f'condor_submit {sub_dir}{sub_file_name}')

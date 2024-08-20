@@ -4,7 +4,7 @@ Argument parser for simulation scripts and simulation setups.
 Author: Birk Emil Karlsen-Baeck
 '''
 
-import argparse
+from jsonargparse import ArgumentParser, ActionConfigFile
 
 
 def single_bunch_simulation_parser(add_help=False):
@@ -15,7 +15,7 @@ def single_bunch_simulation_parser(add_help=False):
     :return:
     '''
 
-    parser = argparse.ArgumentParser(description='Script to simulate single-bunch effects in the LHC.',
+    parser = ArgumentParser(description='Script to simulate single-bunch effects in the LHC.',
                                      add_help=add_help, prefix_chars='~')
 
     # General inputs
@@ -111,6 +111,8 @@ def single_bunch_simulation_parser(add_help=False):
                         help='Option to change the normalized vertical transverse emittance; '
                              'default is 1.8e-6 m')
 
+    parser.add_argument('~~cfg', action=ActionConfigFile)
+
     return parser
 
 def generation_argument_parser(add_help=False):
@@ -120,7 +122,7 @@ def generation_argument_parser(add_help=False):
     :return: parser
     '''
 
-    parser = argparse.ArgumentParser(description='Script to generated beams in the SPS with intensity effects.',
+    parser = ArgumentParser(description='Script to generated beams in the SPS with intensity effects.',
                                      add_help=add_help, prefix_chars='~')
 
     parser.add_argument('~~voltage_200', '~v1', type=float, default=7.5,
@@ -165,7 +167,7 @@ def simulation_argument_parser(add_help=False):
     :param add_help:
     :return:
     '''
-    parser = argparse.ArgumentParser(description='Arguments for simulations.', add_help=add_help,
+    parser = ArgumentParser(description='Arguments for simulations.', add_help=add_help,
                                      prefix_chars='~')
 
     # General inputs
@@ -206,7 +208,7 @@ def sps_llrf_argument_parser(add_help=False):
     :return: parser
     '''
 
-    parser = argparse.ArgumentParser(description='Arguments for the SPS cavity controller.', add_help=add_help,
+    parser = ArgumentParser(description='Arguments for the SPS cavity controller.', add_help=add_help,
                                      prefix_chars='~')
 
     # Parsers for SPS cavity controller
@@ -240,7 +242,7 @@ def lhc_llrf_argument_parser(add_help=False):
     :return: parser
     '''
 
-    parser = argparse.ArgumentParser(description='Arguments for the LHC cavity controller.', add_help=add_help,
+    parser = ArgumentParser(description='Arguments for the LHC cavity controller.', add_help=add_help,
                                      prefix_chars='~')
 
     # Parsers for the LHC cavity loop
