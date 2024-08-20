@@ -103,7 +103,6 @@ for arguments in itertools.product(*scan_dict.values()):
         except:
             config_i[param] = arguments[i]
 
-    print(config_i)
     config_i['simulation_name'] = sim_name_i
     config_i = config_i | reg_params
     configurations.append(sim_name_i + '/config.yaml')
