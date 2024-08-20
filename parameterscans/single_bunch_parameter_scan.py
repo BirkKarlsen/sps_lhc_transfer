@@ -87,7 +87,7 @@ if LXPLUS:
 
 configurations = []
 for arguments in itertools.product(*scan_dict.values()):
-    sim_name_i = sim_folder_name + 'sim'
+    sim_name_i = 'sim'
     sim_arg_i = ''
     config_i = {}
 
@@ -108,6 +108,8 @@ for arguments in itertools.product(*scan_dict.values()):
         make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
     else:
         print(sim_arg_i)
+        print(save_to)
+        print(sim_name_i)
 
 if LXPLUS:
     os.system(f'touch {sub_dir}{sim_folder_name}configs.txt')
