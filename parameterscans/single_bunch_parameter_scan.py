@@ -155,9 +155,9 @@ else:
 
 sub_content = f'executable = {sub_dir}{sim_folder_name}execute_sim.sh\n' \
               f'arguments = {save_to}\$(config)\n' \
-              f'output = {sub_dir}{sim_folder_name}\$(config).out\n' \
-              f'error = {sub_dir}{sim_folder_name}\$(config).err\n' \
-              f'log = {sub_dir}{sim_folder_name}\$(config).log\n' \
+              f'output = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).out\n' \
+              f'error = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).err\n' \
+              f'log = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).log\n' \
               f'transfer_input_files = {save_to}\$(config)\n' \
               f'+JobFlavour = \\"{reg_params["flavour"]}\\"\n' \
               f'queue config from {sub_dir}{sim_folder_name}configs.txt'
