@@ -105,7 +105,7 @@ for arguments in itertools.product(*scan_dict.values()):
 
     if LXPLUS:
         os.system(f'mkdir {save_to + sim_name_i}')
-        make_and_write_yaml('config.yaml', save_to + sim_name_i, config_i)
+        make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
     else:
         print(sim_arg_i)
 
