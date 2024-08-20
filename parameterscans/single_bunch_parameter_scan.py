@@ -81,8 +81,8 @@ today = date.today()
 save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{sim_folder_name}'
 
 if LXPLUS:
-    os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
-    os.system(f'mkdir {save_to}')
+    os.makedirs(f'{lxdir}submission_files/{sim_folder_name}', exist_ok=True)
+    os.makedirs(save_to, exist_ok=True)
     os.system(f'which python3')
 
 configurations = []
@@ -104,7 +104,7 @@ for arguments in itertools.product(*scan_dict.values()):
     configurations.append(sim_name_i + '/config.yaml')
 
     if LXPLUS:
-        os.system(f'mkdir {save_to + sim_name_i}')
+        os.makedirs(save_to + sim_name_i, exist_ok=True)
         make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
     else:
         print(sim_arg_i)
