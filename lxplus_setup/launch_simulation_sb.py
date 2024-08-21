@@ -14,7 +14,7 @@ from datetime import date
 # Arguments -----------------------------------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(parents=[single_bunch_simulation_parser()],
                                  description="This file launches simulations in lxplus.",
-                                 add_help=True, prefix_chars='~')
+                                 add_help=True)
 
 job_flavours = ['espresso',         # 20 minutes
                 'microcentury',     # 1 hour
@@ -23,11 +23,11 @@ job_flavours = ['espresso',         # 20 minutes
                 'tomorrow',         # 1 day
                 'testmatch',        # 3 days
                 'nextweek']         # 1 week
-parser.add_argument('~~flavour', '~f', type=str, choices=job_flavours, default='testmatch',
+parser.add_argument('--flavour', '-f', type=str, choices=job_flavours, default='testmatch',
                     help='Length of allocated for the simulaton; default is testmatch (3 days)')
-parser.add_argument('~~as_gpu', '~agpu', type=int, default=0,
+parser.add_argument('--as_gpu', '-agpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
-parser.add_argument('~~scan', '~sc', type=int, default=0,
+parser.add_argument('--scan', '-sc', type=int, default=0,
                     help='Flag to run as a part of a scan or as a single simualtion; default is single simulation (0)')
 
 
@@ -70,7 +70,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'{inputs} -dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')

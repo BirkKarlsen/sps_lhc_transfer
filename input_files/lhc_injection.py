@@ -219,10 +219,9 @@ def main():
     from lxplus_setup.parsers import simulation_argument_parser, lhc_llrf_argument_parser
 
     parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), lhc_llrf_argument_parser()],
-                                     description='Script to simulate LHC injection.', add_help=True,
-                                     prefix_chars='~')
+                                     description='Script to simulate LHC injection.', add_help=True)
 
-    parser.add_argument('~~date', '~dte', type=str,
+    parser.add_argument('--date', '-dte', type=str,
                         help='Input date of the simulation; if none is parsed then todays date will be taken')
 
     args = parser.parse_args()

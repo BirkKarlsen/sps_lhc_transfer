@@ -8,9 +8,9 @@ Author: Birk Emil Karlsen-Baeck
 import argparse
 
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
-                                 add_help=True, prefix_chars='~')
+                                 add_help=True)
 
-parser.add_argument('~~scan_name', '~sn', type=str, default='LHC_capture_voltage_2.0e11.yaml',
+parser.add_argument('--scan_name', '-sn', type=str, default='LHC_capture_voltage_2.0e11.yaml',
                     help='Name of the parameter scan to turn.')
 
 args = parser.parse_args()
@@ -79,10 +79,10 @@ for arguments in itertools.product(*scan_dict.values()):
     sim_arg_i = ''
     for i, param in enumerate(scans):
         sim_name_i += f'_{param}{arguments[i]:.3e}'
-        sim_arg_i += f'~~{param} {arguments[i]} '
+        sim_arg_i += f'--{param} {arguments[i]} '
 
     launch_string = f'python3 {lxdir}lxplus_setup/launch_complete.py ' \
-                    f'~sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
+                    f'-sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
 
     if LXPLUS:
         os.system(launch_string)

@@ -148,6 +148,7 @@ class LHCInjection:
     emit_y = None
 
     def __init__(self, args, lxdir: str):
+        print(f'Setting the LHC voltage to {args.voltage:.2f} MV...')
         # LHC Machine Parameters --------------------------------------------------------------------------------------
         gamma_t = args.gamma_t              # Transition gamma [-]
         alpha = 1. / gamma_t / gamma_t      # First order mom. comp. factor [-]

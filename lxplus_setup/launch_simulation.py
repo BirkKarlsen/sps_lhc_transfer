@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
                                           sps_llrf_argument_parser(),
                                           lhc_llrf_argument_parser()],
                                  description="This file launches simulations in lxplus.",
-                                 add_help=True, prefix_chars='~')
+                                 add_help=True)
 
-parser.add_argument('~~machine', '~ma', type=str, choices=['sps', 'lhc'], default='lhc',
+parser.add_argument('--machine', '-ma', type=str, choices=['sps', 'lhc'], default='lhc',
                     help='Choose accelerator to simulate in; default is the SPS.')
 job_flavours = ['espresso',         # 20 minutes
                 'microcentury',     # 1 hour
@@ -28,7 +28,7 @@ job_flavours = ['espresso',         # 20 minutes
                 'tomorrow',         # 1 day
                 'testmatch',        # 3 days
                 'nextweek']         # 1 week
-parser.add_argument('~~flavour', '~f', type=str, choices=job_flavours, default='testmatch',
+parser.add_argument('--flavour', '-f', type=str, choices=job_flavours, default='testmatch',
                     help='Length of allocated for the simulaton; default is testmatch (3 days)')
 
 args = parser.parse_args()
@@ -78,7 +78,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs} ~dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'{inputs} -dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')

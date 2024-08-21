@@ -9,12 +9,12 @@ Author: Birk Emil Karlsen-Baeck
 import argparse
 
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
-                                 add_help=True, prefix_chars='~')
+                                 add_help=True)
 
-parser.add_argument('~~scan_name', '~sn', type=str,
+parser.add_argument('--scan_name', '-sn', type=str,
                     default='single_bunch_persistent_oscillations_2.3e11_2024_mini.yaml',
                     help='Name of the parameter scan to turn.')
-parser.add_argument('~~run_gpu', '~gpu', type=int, default=0,
+parser.add_argument('--run_gpu', '-gpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
 
 args = parser.parse_args()
@@ -96,7 +96,7 @@ for arguments in itertools.product(*scan_dict.values()):
             sim_name_i += f'_{param}{arguments[i]}'
         else:
             sim_name_i += f'_{param}{arguments[i]:.3e}'
-        sim_arg_i += f'~~{param} {arguments[i]} '
+        sim_arg_i += f'--{param} {arguments[i]} '
 
         try:
             config_i[param] = arguments[i].item()
@@ -136,7 +136,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'~~cfg \$1 ~dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'--cfg \$1 -dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if LXPLUS:
     os.system(f'echo "{bash_content}" > {sub_dir}{sim_folder_name}execute_sim.sh')
