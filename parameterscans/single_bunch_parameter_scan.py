@@ -105,6 +105,7 @@ for arguments in itertools.product(*scan_dict.values()):
 
     config_i['simulation_name'] = sim_name_i
     config_i = config_i | reg_params
+    config_i.pop('flavour', None)
     configurations.append(sim_name_i + '/config.yaml')
 
     if LXPLUS:
@@ -136,7 +137,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'--cfg \$1 -dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'--config \$1 -dte {today.strftime("%b-%d-%Y")} \n\n'
 
 if LXPLUS:
     os.system(f'echo "{bash_content}" > {sub_dir}{sim_folder_name}execute_sim.sh')
