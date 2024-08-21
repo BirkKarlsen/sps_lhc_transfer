@@ -12,13 +12,14 @@ bunchlength:
   stop: 1.6                 # [ns]
   steps: 3                  # A scan in bunch length to look at losses as a function of bunch length
   scale: 'linear'
-phase_error: 0
+phase_error: 25
 # Tracking configuration
 number_of_turns: 500000     # Number of turns corresponding to 5 minutes
 include_global: 0           # Including beam-phase loop
 dt_cont: 10                 # The turns between the continuous signals are sampled
 dt_beam: 50000              # The turns between beam parameters are measured
 dt_int: 1                   # The turns between calculating the beam induced voltage
+dt_ld: 200000               # The turns between saving the particle coordinates
 # SPS settings
 voltage_200: 8.4
 voltage_800: 0.165

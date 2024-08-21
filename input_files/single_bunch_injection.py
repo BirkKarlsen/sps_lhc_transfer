@@ -285,6 +285,13 @@ class LHCInjection:
     def compute_induced_voltage(self):
         self.induced_voltage.induced_voltage_sum()
 
+    def save_distribution(self, save_to):
+        np.savez(
+            save_to + f'distribution_{self.rf_tracker.counter[0]}.npz',
+            dt=self.beam.dt,
+            dE=self.beam.dE
+        )
+
     def track(self):
         self.rf_tracker.track()
         self.profile.track()
@@ -354,6 +361,7 @@ def main():
     dt_int = args.dt_int
     dt_cont = args.dt_cont
     dt_beam = args.dt_beam
+    dt_ld = args.dt_ld
 
     indx = 0
 
@@ -394,8 +402,12 @@ def main():
             df = pd.DataFrame(evolution)
             df.to_hdf(save_to + 'output.h5', 'Beam')
 
+        if i % dt_ld == 0:
+            lhc_injection.save_distribution(save_to)
+
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
+    lhc_injection.save_distribution(save_to)
 
 
 if __name__ == "__main__":

@@ -23,13 +23,14 @@ include_global: 0           # Including beam-phase loop
 dt_cont: 10                 # The turns between the continuous signals are sampled
 dt_beam: 50000              # The turns between beam parameters are measured
 dt_int: 1                   # The turns between calculating the beam induced voltage
+dt_ld: 200000               # The turns between saving the particle coordinates
 # SPS settings
 voltage_200: 8.4
 voltage_800: 0.165
 # LHC settings
 voltage:
-  start: 4                  # [MV]
-  stop: 9                   # [MV]
+  start: 5                  # [MV]
+  stop: 10                   # [MV]
   steps: 6
   scale: 'linear'
 # HT condor settings
