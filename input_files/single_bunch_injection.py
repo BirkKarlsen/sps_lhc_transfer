@@ -68,6 +68,8 @@ class SPSGeneration:
         # SPS Machine Parameters --------------------------------------------------------------------------------------
         V = args.voltage_200 * 1e6          # 200 MHz RF voltage [V]
         V_800 = args.voltage_800 * V        # 800 MHz RF voltage [V]
+        print(f'Setting the SPS 200 MHz voltage to {args.voltage_200:.2f} MV and '
+              f'the 800 MHz to {100 * args.voltage_800:.2f} %...')
 
         # Set up Ring and RF Station
         # SPS Ring
