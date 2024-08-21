@@ -103,7 +103,7 @@ for arguments in itertools.product(*scan_dict.values()):
         except:
             config_i[param] = arguments[i]
 
-    config_i['simulation_name'] = sim_name_i
+    config_i['simulation_name'] = sim_folder_name + sim_name_i
     config_i = config_i | reg_params
     config_i.pop('flavour', None)
     configurations.append(sim_name_i + '/config.yaml')
@@ -113,8 +113,7 @@ for arguments in itertools.product(*scan_dict.values()):
         make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
     else:
         print(sim_arg_i)
-        print(save_to)
-        print(sim_name_i)
+        print(config_i['simulation_name'])
 
 if LXPLUS:
     os.system(f'touch {sub_dir}{sim_folder_name}configs.txt')
