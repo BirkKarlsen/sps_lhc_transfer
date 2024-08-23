@@ -344,11 +344,11 @@ def main():
     lhc_injection.set_profile()
 
     # Adding an impedance model
-    if args.include_impedance:
+    if bool(args.include_impedance):
         lhc_injection.set_induced_voltage(args.impedance_model)
 
     # Adding the beam feedback
-    if args.include_global:
+    if bool(args.include_global):
         lhc_injection.set_beam_feedback(args)
 
     # Constructing the tracker
