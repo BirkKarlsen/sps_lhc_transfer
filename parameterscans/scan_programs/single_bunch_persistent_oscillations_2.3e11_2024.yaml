@@ -13,9 +13,9 @@ bunchlength:
   steps: 6                  # A scan in bunch length to look at losses as a function of bunch length
   scale: 'linear'
 phase_error:
-  start: 0                  # [deg]
+  start: 10                 # [deg]
   stop: 50                  # [deg]
-  steps: 6
+  steps: 5
   scale: 'linear'
 # Tracking configuration
 number_of_turns: 500000     # Number of turns corresponding to 5 minutes
@@ -30,7 +30,7 @@ voltage_800: 0.165
 # LHC settings
 voltage:
   start: 5                  # [MV]
-  stop: 10                   # [MV]
+  stop: 10                  # [MV]
   steps: 6
   scale: 'linear'
 # HT condor settings
