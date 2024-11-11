@@ -14,6 +14,9 @@ parser = argparse.ArgumentParser(description='Script to launch a parameter scan 
 parser.add_argument('--scan_name', '-sn', type=str,
                     default='single_bunch_persistent_oscillations_2.3e11_2024_mini.yaml',
                     help='Name of the parameter scan to turn.')
+parser.add_argument('--beam_process', '-bp', type=str, choices=['inj', 'fltbttm', 'ramp', 'flttp'],
+                    default='inj',
+                    help='Choose the part of the LHC cycle to simualte.')
 parser.add_argument('--run_gpu', '-gpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
 
@@ -125,7 +128,12 @@ if LXPLUS:
     configs_file.close()
 
 # Bash file
-script_name = 'single_bunch_injection'
+if args.beam_process == 'inj':
+    script_name = 'single_bunch_injection'
+elif args.beam_process == 'fltbttm':
+    script_name = 'single_bunch_flatbottom'
+else:
+    raise RuntimeError('Ramp and flat top is not yet implemented')
 
 # f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \ at second line
 # f'{stage_data}\n' \ after source .bashrc
