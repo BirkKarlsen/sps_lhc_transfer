@@ -453,7 +453,7 @@ def main():
     for i in range(lhc_flatbottom.N_t):
         lhc_flatbottom.track()
 
-        if i % dt_int == 0:
+        if i % dt_int == 0 and lhc_flatbottom.induced_voltage is not None:
             lhc_flatbottom.compute_induced_voltage()
 
         if (i - 1) % dt_cont == 0:

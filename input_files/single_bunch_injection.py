@@ -382,7 +382,7 @@ def main():
         if i % dt_int == 0:
             lhc_injection.compute_induced_voltage()
 
-        if (i - 1) % dt_cont == 0:
+        if (i - 1) % dt_cont == 0 and lhc_injection.induced_voltage is not None:
             lhc_injection.compute_losses()
 
             evolution['time'][indx] = (i - 1) * lhc_injection.rfstation.t_rev[lhc_injection.rfstation.counter[0]]
