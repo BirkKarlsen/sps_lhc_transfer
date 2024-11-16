@@ -437,6 +437,7 @@ def main():
     evolution = {
         'time': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'tau': np.zeros(lhc_flatbottom.N_t // dt_cont),
+        'tau_rms': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'intensity': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'dt_rms': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'dE_rms': np.zeros(lhc_flatbottom.N_t // dt_cont),
