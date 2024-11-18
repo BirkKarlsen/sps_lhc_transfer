@@ -146,8 +146,9 @@ class LHCGeneration:
         self.exponent = args.exponent
         self.bunch_length = args.bunchlength * 1e-9
 
-        print("Adding SPS impedance model")
-        self.set_induced_voltage(model_str)
+        print("Adding LHC impedance model")
+        if bool(args.include_impedance):
+            self.set_induced_voltage(model_str)
 
         # Initialize the RF tracker
         self.rf_tracker = RingAndRFTracker(self.rfstation, self.beam,
@@ -322,10 +323,11 @@ class LHCFlatBottom:
         emit_y = args.emittance_y / self.beam.gamma / self.beam.beta
 
         self.scattering = NagaitsevScattering(
-            self.beam, self.profile_sigma, self.ring, twiss, emit_x, emit_y
+            self.beam, self.profile_sigma, self.rfstation, twiss, emit_x, emit_y
         )
 
         self.track = self.track_with_scattering
+        print("Added intra-beam scattering to tracking...")
 
     def construct_tracker(self):
         print("Constructing tracker")
@@ -342,8 +344,8 @@ class LHCFlatBottom:
     def compute_induced_voltage(self):
         self.induced_voltage.induced_voltage_sum()
 
-    def compute_scattering_params(self, turn):
-        self.scattering.update_beam_parameters(turn)
+    def compute_scattering_params(self):
+        self.scattering.update_kick_strength()
 
     def save_distribution(self, save_to):
         np.savez(
@@ -398,6 +400,7 @@ def main():
     # Generate SPS bunch
     lhc_generation = LHCGeneration(args, lxdir)
     lhc_generation.set_profile(args)
+    # Adding an impedance model
     lhc_generation.prepare_generation_bunch(args=args, model_str=args.impedance_model)
     lhc_generation.run_generation(n_iterations=30)
 
@@ -449,13 +452,17 @@ def main():
     }
 
     if lhc_flatbottom.scattering is not None:
-        lhc_flatbottom.compute_scattering_params(turn=0)
+        lhc_flatbottom.compute_scattering_params()
+        print(f'Initial longitudinal growth rate {lhc_flatbottom.scattering.t_z:.6f} s')
 
     for i in range(lhc_flatbottom.N_t):
-        lhc_flatbottom.track()
-
         if i % dt_int == 0 and lhc_flatbottom.induced_voltage is not None:
             lhc_flatbottom.compute_induced_voltage()
+
+        if i % dt_ibs == 0 and lhc_flatbottom.scattering is not None:
+            lhc_flatbottom.compute_scattering_params()
+
+        lhc_flatbottom.track()
 
         if (i - 1) % dt_cont == 0:
             lhc_flatbottom.compute_losses()
@@ -484,9 +491,6 @@ def main():
 
         if i % dt_ld == 0:
             lhc_flatbottom.save_distribution(save_to)
-
-        if i % dt_ibs == 0 and lhc_flatbottom.scattering is not None:
-            lhc_flatbottom.compute_scattering_params(turn=i)
 
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
