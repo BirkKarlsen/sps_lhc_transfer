@@ -116,6 +116,7 @@ def single_bunch_simulation_parser(add_help=False):
 
     return parser
 
+
 def generation_argument_parser(add_help=False):
     r'''
     Parser for generation of beams in the SPS.
@@ -158,6 +159,9 @@ def generation_argument_parser(add_help=False):
     parser.add_argument('--custom_beam_dir', '-cbd', type=str,
                         help='Directory of the custom beam parameters.')
 
+    parser.add_argument('--config', action='config',
+                        help='Option to pass a configuration file.')
+
     return parser
 
 
@@ -197,6 +201,9 @@ def simulation_argument_parser(add_help=False):
     parser.add_argument('--dt_ld', '-dld', type=int, default=100,
                         help='The turns between measuring the beam line density; default is every 100 turns')
 
+    parser.add_argument('--config', action='config',
+                        help='Option to pass a configuration file.')
+
     return parser
 
 
@@ -227,7 +234,7 @@ def sps_llrf_argument_parser(add_help=False):
                         help='LLRF gain for 4-section cavities; default is same as 3-section')
     parser.add_argument('--g_tx_2', '-gt2', type=float,
                         help='Transmitter gain for 4-section cavities; default is same as 3-section')
-    parser.add_argument('--open_ff', '-ff', type=int, default=1,
+    parser.add_argument('--open_ff', '-ff', type=int, default=0,
                         help='Open the SPS FF; default is 1 (True)')
 
     return parser

@@ -13,9 +13,9 @@ from lxplus_setup.staging_simulations import stage_data_for_simulation, stage_ou
 from datetime import date
 
 # Arguments -----------------------------------------------------------------------------------------------------------
-parser = argparse.ArgumentParser(parents=[simulation_argument_parser(),
-                                          sps_llrf_argument_parser(),
-                                          lhc_llrf_argument_parser()],
+parser = argparse.ArgumentParser(parents=[sps_llrf_argument_parser(),
+                                          lhc_llrf_argument_parser(),
+                                          simulation_argument_parser()],
                                  description="This file launches simulations in lxplus.",
                                  add_help=True)
 

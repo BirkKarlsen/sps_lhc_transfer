@@ -218,7 +218,7 @@ def main():
     import argparse
     from lxplus_setup.parsers import simulation_argument_parser, lhc_llrf_argument_parser
 
-    parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), lhc_llrf_argument_parser()],
+    parser = argparse.ArgumentParser(parents=[lhc_llrf_argument_parser(), simulation_argument_parser()],
                                      description='Script to simulate LHC injection.', add_help=True)
 
     parser.add_argument('--date', '-dte', type=str,

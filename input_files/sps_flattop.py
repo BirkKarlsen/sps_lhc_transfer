@@ -175,7 +175,7 @@ def main():
     import argparse
     from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser
 
-    parser = argparse.ArgumentParser(parents=[simulation_argument_parser(), sps_llrf_argument_parser()],
+    parser = argparse.ArgumentParser(parents=[sps_llrf_argument_parser(), simulation_argument_parser()],
                                      description='Script to simulate beams in the '
                                                  'SPS with intensity effects at flattop.',
                                      add_help=True)
