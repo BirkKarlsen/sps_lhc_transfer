@@ -25,8 +25,9 @@ args = parser.parse_args()
 import numpy as np
 import os
 import itertools
+from datetime import date
 
-from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml
+from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml, make_and_write_yaml
 from beam_dynamics_tools.analytical_functions.mathematical_functions import to_linear
 
 from lxplus_setup.parsers import parse_arguments_from_dictonary
@@ -41,6 +42,7 @@ if 'birkkarlsen-baeck' in os.getcwd():
 else:
     print('\nRunning in lxplus...')
 
+sub_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submission_files/'
 
 # Launching scans -----------------------------------------------------------------------------------------------------
 param_dict = fetch_from_yaml(args.scan_name, lxdir + f'parameterscans/scan_programs/')
@@ -78,14 +80,20 @@ for param in scans:
 fixed_arguments = parse_arguments_from_dictonary(reg_params)
 sim_folder_name = args.scan_name[:-5] + '/'
 
+today = date.today()
+save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{sim_folder_name}'
+
 if LXPLUS:
-    os.system(f'mkdir {lxdir}bash_files/{sim_folder_name}')
-    os.system(f'mkdir {lxdir}submission_files/{sim_folder_name}')
+    os.makedirs(f'{lxdir}submission_files/{sim_folder_name}', exist_ok=True)
+    os.makedirs(save_to, exist_ok=True)
     os.system(f'which python3')
 
+configurations = []
 for arguments in itertools.product(*scan_dict.values()):
-    sim_name_i = sim_folder_name + 'sim'
+    sim_name_i = 'sim'
     sim_arg_i = ''
+    config_i = {}
+
     for i, param in enumerate(scans):
         if type(arguments[i]) is str:
             sim_name_i += f'_{param}{arguments[i]}'
@@ -93,10 +101,65 @@ for arguments in itertools.product(*scan_dict.values()):
             sim_name_i += f'_{param}{arguments[i]:.3e}'
         sim_arg_i += f'--{param} {arguments[i]} '
 
-    launch_string = f'python3 {lxdir}lxplus_setup/launch_simulation.py ' \
-                    f'-ma sps -sm {sim_name_i} {sim_arg_i}{fixed_arguments}'
+        try:
+            config_i[param] = arguments[i].item()
+        except:
+            config_i[param] = arguments[i]
+
+    config_i['simulation_name'] = sim_folder_name + sim_name_i
+    config_i = config_i | reg_params
+    config_i.pop('flavour', None)
+    configurations.append(sim_name_i + '/config.yaml')
 
     if LXPLUS:
-        os.system(launch_string)
+        os.makedirs(save_to + sim_name_i, exist_ok=True)
+        make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
     else:
         print(sim_arg_i)
+        print(config_i['simulation_name'])
+
+if LXPLUS:
+    os.system(f'touch {sub_dir}{sim_folder_name}configs.txt')
+
+    configs_file = open(f'{sub_dir}{sim_folder_name}configs.txt', 'w')
+    for config in configurations:
+        configs_file.write(config + '\n')
+
+    configs_file.close()
+
+# Bash file
+# f'export EOS_MGM_URL=root://eosuser.cern.ch\n' \ at second line
+# f'{stage_data}\n' \ after source .bashrc
+
+bash_content = f'#!/bin/bash\n' \
+               f'source /afs/cern.ch/user/b/bkarlsen/.bashrc\n' \
+               f'which /afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3\n' \
+               f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
+               f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
+               f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/sps_flattop.py ' \
+               f'--config \$1 -dte {today.strftime("%b-%d-%Y")} \n\n'
+
+if LXPLUS:
+    os.system(f'echo "{bash_content}" > {sub_dir}{sim_folder_name}execute_sim.sh')
+    os.system(f'chmod a+x {sub_dir}{sim_folder_name}execute_sim.sh')
+else:
+    print(bash_content)
+
+# Submission file
+if LXPLUS:
+    os.system(f'touch {sub_dir}{sim_folder_name}condor_submission.sub')
+
+sub_content = f'executable = {sub_dir}{sim_folder_name}execute_sim.sh\n' \
+              f'arguments = {save_to}\$(config)\n' \
+              f'output = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).out\n' \
+              f'error = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).err\n' \
+              f'log = {sub_dir}{sim_folder_name}\$(ClusterId)\$(ProcId).log\n' \
+              f'transfer_input_files = {save_to}\$(config)\n' \
+              f'+JobFlavour = \\"{reg_params["flavour"]}\\"\n' \
+              f'queue config from {sub_dir}{sim_folder_name}configs.txt'
+
+if LXPLUS:
+    os.system(f'echo "{sub_content}" > {sub_dir}{sim_folder_name}condor_submission.sub')
+    os.system(f'chmod a+x {sub_dir}{sim_folder_name}condor_submission.sub')
+
+    os.system(f'condor_submit {sub_dir}{sim_folder_name}condor_submission.sub')
