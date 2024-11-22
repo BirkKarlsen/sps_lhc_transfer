@@ -1,0 +1,16 @@
+# Simulation of beams for the 2024 loss estimates with BCMS beams based on operation in 2024.
+beam_name:
+  ['LHC_2024_bcms_pilot_12b', 'LHC_2024_bcms_72b']
+profile_length: 2000
+number_of_turns: 30000  # [turn]
+diag_setting: 1
+dt_cont: 10             # [turn]
+dt_beam: 5000           # [turn]
+dt_cl: 5000             # [turn]
+dt_prfl: 2000           # [turn]
+dt_ld: 5000             # [turn]
+# SPS LLRF setting
+g_llrf_1: 20
+v_part: 0.61735176864
+simulated_beam: 1
+flavour: 'testmatch'
