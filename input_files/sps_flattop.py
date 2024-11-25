@@ -89,7 +89,7 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     rfstation = RFStation(ring, [h, 4 * h], [V, V_800], [dphi, dphi_800], n_rf=2)
 
     # Beam
-    ddt = 0 * rfstation.t_rf[0, 0]
+    ddt = 1000 * rfstation.t_rf[0, 0]
     beam = Beam(ring, N_m, N_p)
     if pre_beam is None:
         gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
@@ -167,6 +167,8 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         gen_dict['Turns simulated'] = N_t
         document = yaml.dump(gen_dict, file)
 
+    beam.dt -= ddt
+    
     return beam, profile, gen_dict
 
 

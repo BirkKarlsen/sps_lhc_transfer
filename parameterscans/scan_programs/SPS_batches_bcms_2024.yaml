@@ -12,5 +12,4 @@ dt_ld: 5000             # [turn]
 # SPS LLRF setting
 g_llrf_1: 20
 v_part: 0.61735176864
-simulated_beam: 1
 flavour: 'testmatch'
