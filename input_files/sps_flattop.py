@@ -172,13 +172,14 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
 def main():
     # Parse Arguments --------------------------------------------------------------------------------------------------
-    import argparse
+    from jsonargparse import ArgumentParser
     from lxplus_setup.parsers import simulation_argument_parser, sps_llrf_argument_parser
 
-    parser = argparse.ArgumentParser(parents=[sps_llrf_argument_parser(), simulation_argument_parser()],
-                                     description='Script to simulate beams in the '
-                                                 'SPS with intensity effects at flattop.',
-                                     add_help=True)
+    parser = ArgumentParser(
+        parents=[sps_llrf_argument_parser(), simulation_argument_parser()],
+        description='Script to simulate beams in the SPS with intensity effects at flattop.',
+        add_help=True
+    )
 
     parser.add_argument('--date', '-dte', type=str,
                         help='Input date of the simulation; if none is parsed then todays date will be taken')
