@@ -340,6 +340,10 @@ class LHCFlatBottom:
 
     def compute_losses(self):
         self.beam.losses_separatrix(self.ring, self.rfstation)
+        self.beam.losses_longitudinal_cut(
+            self.rfstation.bucket_center(0) - self.rfstation.t_rf[0, self.rfstation.counter[0]],
+            self.rfstation.bucket_center(0) + self.rfstation.t_rf[0, self.rfstation.counter[0]]
+        )
 
     def compute_induced_voltage(self):
         self.induced_voltage.induced_voltage_sum()
