@@ -1,2 +1,2 @@
 # List of injections
-LHC_2024_bcms_72b: [1430, 2000, 1, 72]
+LHC_2024_bcms_72b: [1700, 2000, 1, 72] # injection int bucket, after n turns, simulated, number of bunches

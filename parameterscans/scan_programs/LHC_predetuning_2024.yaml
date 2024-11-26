@@ -19,7 +19,7 @@ loaded_q:
   stop: 22500
   steps: 3
   scale: 'linear'
-voltage: 5.0
+voltage: 5.5
 simulated_beam: 1
 include_global: 1
 flavour: 'tomorrow'

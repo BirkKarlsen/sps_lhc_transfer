@@ -99,6 +99,7 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
     beam = Beam(ring, len(imported_beam[1, :]), N_p)
 
+    # Initial beam will be at bucket 1001
     ddt = 1000 * rfstation.t_rf[0, 0]
     Dt = (((2 * np.pi * 1100.009)/(4620 * c * ring.beta[0, 0])) - rfstation.t_rf[0, 0])/2
     beam.dE = imported_beam[1, :] + args.energy_error * 1e6
