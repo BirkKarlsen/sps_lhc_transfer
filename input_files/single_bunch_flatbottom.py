@@ -484,8 +484,10 @@ def main():
             evolution['rms_emittance'][indx] = lhc_flatbottom.beam.epsn_rms_l
 
             if lhc_flatbottom.scattering is not None:
-                evolution['emittance_x'][indx] = lhc_flatbottom.scattering.emittance_x
-                evolution['emittance_y'][indx] = lhc_flatbottom.scattering.emittance_y
+                evolution['emittance_x'][indx] = lhc_flatbottom.scattering.emittance_x \
+                                                 * lhc_flatbottom.beam.beta * lhc_flatbottom.beam.gamma
+                evolution['emittance_y'][indx] = lhc_flatbottom.scattering.emittance_y \
+                                                 * lhc_flatbottom.beam.beta * lhc_flatbottom.beam.gamma
 
             indx += 1
 
