@@ -1,0 +1,26 @@
+# Single simulation of IBS for a standard bunch beam with average parameters
+# Bunch generation configuration
+generated_in: 'LHC'
+include_impedance: 0        # Include the LHC impedance model
+impedance_model: 'LHC_450GeV_2024_june.dat'
+intra_beam: 1
+# Beam parameters
+intensity: 2.3             # Operational LHC intensity during 2023
+n_macroparticles: 1000000
+exponent: 2.5
+bunchlength: 1.23
+emittance_x: 2.004e-6        # [m]
+emittance_y: 2.017e-6        # [m]
+# Tracking configuration
+number_of_turns: 20250000   # Number of turns corresponding to 20 minutes
+include_global: 0           # Without beam-phase loop
+dt_cont: 1000               # The turns between the continuous signals are sampled
+dt_beam: 50000              # The turns between beam parameters are measured
+dt_int: 1                   # The turns between calculating the beam induced voltage
+dt_ld: 500000               # The turns between saving the particle coordinates
+update_ibs: 10000           # The turns between updating the ibs parameters
+# LHC settings
+voltage: 6.5                # [MV]
+# HT condor settings
+flavour: 'nextweek'         # job should be much longer
+run_gpu: 1
