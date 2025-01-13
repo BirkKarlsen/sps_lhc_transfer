@@ -81,7 +81,7 @@ fixed_arguments = parse_arguments_from_dictonary(reg_params)
 sim_folder_name = args.scan_name[:-5] + '/'
 
 today = date.today()
-save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{sim_folder_name}'
+save_to = lxdir + f'simulation_results/{today.strftime("%Y-%m-%d")}/{sim_folder_name}'
 
 if LXPLUS:
     os.makedirs(f'{lxdir}submission_files/{sim_folder_name}', exist_ok=True)
@@ -144,7 +144,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'--config \$1 -dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'--config \$1 -dte {today.strftime("%Y-%m-%d")} \n\n'
 
 if LXPLUS:
     os.system(f'echo "{bash_content}" > {sub_dir}{sim_folder_name}execute_sim.sh')

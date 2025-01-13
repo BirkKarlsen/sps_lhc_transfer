@@ -40,7 +40,7 @@ bash_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/bash_files/'
 sub_dir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/submission_files/'
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 today = date.today()
-save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+save_to = lxdir + f'simulation_results/{today.strftime("%Y-%m-%d")}/{args.simulation_name}/'
 
 beam_ID = args.beam_name
 
@@ -78,7 +78,7 @@ bash_content = f'#!/bin/bash\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 --version\n' \
                f'/afs/cern.ch/user/b/bkarlsen/pythonpackages/p3.11.8/bin/python3 ' \
                f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/input_files/{script_name}.py ' \
-               f'{inputs} -dte {today.strftime("%b-%d-%Y")} \n\n'
+               f'{inputs} -dte {today.strftime("%Y-%m-%d")} \n\n'
 
 if not disable:
     os.system(f'echo "{bash_content}" > {bash_dir}{bash_file_name}')

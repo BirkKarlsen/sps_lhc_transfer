@@ -185,7 +185,7 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     # Make simulation output folder
     if args.date is None:
         today = date.today()
-        save_to = lxdir + f'simulation_results/{today.strftime("%b-%d-%Y")}/{args.simulation_name}/'
+        save_to = lxdir + f'simulation_results/{today.strftime("%Y-%m-%d")}/{args.simulation_name}/'
         if not os.path.isdir(save_to):
             os.makedirs(save_to)
     else:
