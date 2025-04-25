@@ -5,6 +5,7 @@ Author: Birk Emil Karlsen-Baeck
 '''
 
 from jsonargparse import ArgumentParser
+from traitlets import default
 
 
 def single_bunch_simulation_parser(add_help=False):
@@ -81,16 +82,27 @@ def single_bunch_simulation_parser(add_help=False):
                         help='Option to add energy offset [MeV] to initial batch; default is 0 MeV')
     parser.add_argument('--phase_error', '-per', type=float, default=0,
                         help='Option to add phase offset [degrees] to initial batch; default is 0')
-    parser.add_argument('--impedance_model', '-im', type=str,
-                        default='LHC_450GeV.dat',
-                        help='Option to choose which impedance model to use; default is standard LHC injection.')
-    parser.add_argument('--include_impedance', '-iim', type=int, default=0,
-                        help='Option to include the impedance of the machine; default is to include it (1).')
     parser.add_argument('--ramp', '-r', type=float,
                         help='Option to include a different final energy [GeV] and this a ramp in simulation; '
                              'if nothing is passed then there will be no ramp.')
     parser.add_argument('--momentum_program', '-mp', type=str, default='LHC_momentum_programme_6.8TeV.csv',
                         help='Option to choose the momentum program for the LHC default is the 6.8 TeV ramp')
+
+    # Parsers for the LHC impedance
+    parser.add_argument('--impedance_model', '-im', type=str,
+                        default='LHC_450GeV.dat',
+                        help='Option to choose which impedance model to use; default is standard LHC injection.')
+    parser.add_argument('--include_impedance', '-iim', type=int, default=0,
+                        help='Option to include the impedance of the machine; default is to include it (1).')
+    parser.add_argument('--broadband', '-bb', type=int, default=0,
+                        help='Option to use an effective broadband impedance instead of the impedance model. '
+                             'default value is False (0)')
+    parser.add_argument('--f_cutoff', type=float, default=5e9,
+                        help='Option to set cut-off frequency of the effective broadband impedance. '
+                             'Default value is 5e9 Hz')
+    parser.add_argument('--z_over_n', type=float, default=0.082,
+                        help='Option to set Z over N of the effective broadband impedance.'
+                             'Default is 0.082, which should correspond to 0.07 Ohms')
 
     # Sources of bunch blow-up
     parser.add_argument('--noise', '-ns', type=str, default=None,
@@ -253,24 +265,31 @@ def lhc_llrf_argument_parser(add_help=False):
     # Parsers for the LHC cavity loop
     parser.add_argument('--include_local', '-il', type=int, default=1,
                         help='Option to include the cavity controller, default is True (1)')
+    # Analog feedback
     parser.add_argument('--analog_gain', '-ga', type=float, default=6.79e-6,
                         help='Analog gain in the LHC RFFB; default is 6.79e-6 A/V')
     parser.add_argument('--analog_delay', '-ta', type=float, default=170e-6,
                         help='Analog feedback delay in the LHC RFFB; default is 170e-6 s')
+    # Digital feedback
     parser.add_argument('--digital_gain', '-gd', type=float, default=10,
                         help='Digital gain in the LHC RFFB; default is 10')
     parser.add_argument('--digital_delay', '-td', type=float, default=400e-6,
                         help='Digital feedback delay in the LHC RFFB; default is 400e-6 s')
-    parser.add_argument('--loop_delay', '-tl', type=float, default=650e-9,
-                        help='Total loop delay in the LHC RFFB; default is 650e-9 s')
-    parser.add_argument('--loaded_q', '-ql', type=float, default=20000,
-                        help='Loaded quality in the LHC cavity; default is 20000')
+    # One-turn feedback
     parser.add_argument('--comb_alpha', '-ca', type=float, default=15 / 16,
                         help='Comb filter coefficient for the LHC OTFB; default is 15/16')
     parser.add_argument('--otfb_delay', '-to', type=float, default=1.2e-6,
                         help='Complementary delay in the LHC OTFB; default is  1.2e-6 s')
     parser.add_argument('--otfb_gain', '-go', type=float, default=10,
                         help='The OTFB gain; default is 10')
+    parser.add_argument('--open_otfb', '-oo', type=int, default=0,
+                        help='Open the OTFB; default is False (0)')
+    # More general parameters
+    parser.add_argument('--loop_delay', '-tl', type=float, default=650e-9,
+                        help='Total loop delay in the LHC RFFB; default is 650e-9 s')
+    parser.add_argument('--loaded_q', '-ql', type=float, default=20000,
+                        help='Loaded quality in the LHC cavity; default is 20000')
+    # Half-detuning and pretuning
     parser.add_argument('--detuning_mu', '-dl', type=float, default=0,
                         help='The tuning parameter which determines the number of turns it takes to detune the cavity; '
                              'default is 0.')
@@ -278,6 +297,7 @@ def lhc_llrf_argument_parser(add_help=False):
                         help='The detuning at the start of the simulation; default is 0')
     parser.add_argument('--pre_detune', '-pd', type=int, default=0,
                         help='Option to enable pre-detuning of the RF cavities; default is False (0)')
+    # Power clamping
     parser.add_argument('--clamping_thres', '-ct', type=float, default=300e3,
                         help='The available power in klystron [W]; default is 300 kW')
     parser.add_argument('--clamp', '-cp', type=int, default=0,

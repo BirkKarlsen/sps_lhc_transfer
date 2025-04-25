@@ -170,7 +170,7 @@ def main():
     # Options ----------------------------------------------------------------------------------------------------------
     lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
     LXPLUS = True
-    if 'birkkarlsen-baeck' in os.getcwd():
+    if 'afs' not in os.getcwd():
         lxdir = '../'
         LXPLUS = False
         print('\nRunning locally...')

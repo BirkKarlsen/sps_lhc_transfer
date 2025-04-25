@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import os
 from datetime import date
@@ -120,13 +121,19 @@ class SPSGeneration:
 
     def run_generation(self, n_iterations):
         print(f"Generating a {self.bunch_length * 1e9:.3f} ns bunch")
-        matched_from_distribution_function(self.beam, self.full_tracker,
-                                           TotalInducedVoltage=self.induced_voltage,
-                                           bunch_length=self.bunch_length,
-                                           bunch_length_fit="fwhm",
-                                           distribution_type="binomial",
-                                           distribution_exponent=self.exponent,
-                                           n_iterations=n_iterations)
+        matched_from_distribution_function(
+            self.beam, self.full_tracker,
+            TotalInducedVoltage=self.induced_voltage,
+            bunch_length=self.bunch_length,
+            bunch_length_fit="fwhm",
+            distribution_type="binomial",
+            distribution_exponent=self.exponent,
+            n_iterations=n_iterations,
+            distribution_variable="Action",
+            n_points_potential=1e4,
+            n_points_grid=int(1e3),
+            dt_margin_percent=0.4
+        )
 
     def simulate_on_gpu(self) -> None:
         prepare_gpu_simulation(self)
@@ -142,6 +149,7 @@ class LHCInjection:
     beam = None
     beam_feedback = None
     profile = None
+    profile_scope = None
     induced_voltage = None
     rf_tracker = None
     intra_beam_scattering = None
@@ -171,12 +179,25 @@ class LHCInjection:
         )
 
     def set_profile(self):
-        self.profile = Profile(self.beam,
-                               CutOptions(-1.5 * self.rfstation.t_rf[0, 0],
-                                          2.5 * self.rfstation.t_rf[0, 0],
-                                          4 * (2 ** 6)),
-                               FitOptions(fit_option='fwhm'))
+        self.profile = Profile(
+            self.beam,
+            CutOptions(
+                -1.5 * self.rfstation.t_rf[0, 0],
+                2.5 * self.rfstation.t_rf[0, 0],
+                4 * (2 ** 6)
+            ),
+            FitOptions(fit_option='fwhm')
+        )
         self.profile.track()
+
+        self.profile_scope = Profile(
+            self.beam,
+            CutOptions(-0.75 * self.rfstation.t_rf[0, 0],
+                      1.75 * self.rfstation.t_rf[0, 0],
+                      250),
+            FitOptions(fit_option='fwhm')
+        )
+        self.profile_scope.track()
 
     def inject_beam(self, beam: Beam, injection_shift: float):
         print(f'Injected beam with {beam.n_macroparticles} macro particles and {beam.intensity} protons')
@@ -190,7 +211,13 @@ class LHCInjection:
         self.beam.dE += energy_error * 1e6
         self.beam.dt += phase_error / 360 * self.rfstation.t_rf[0, 0]
 
-    def set_induced_voltage(self, model_str: str):
+    def set_induced_voltage(
+            self,
+            model_str: str,
+            effective: bool = False,
+            z_over_n: float = 0.07,
+            f_cutoff: float = 5e9
+    ) -> None:
         print(f'Adding induced voltage...')
         f_r = 5e9
         freq_res = 1 / self.rfstation.t_rev[0] / 1
@@ -231,6 +258,15 @@ class LHCInjection:
 
             input_table = InputTable(freq, 8 * z_cl.real, 8 * z_cl.imag)
             impedance_list.append(input_table)
+
+        if effective:
+            effective_broadband = Resonators(
+                R_S=f_cutoff * z_over_n /self.ring.f_rev[0],
+                frequency_R=f_cutoff,
+                Q=1
+            )
+
+            impedance_list = [effective_broadband]
 
         impedance_freq = InducedVoltageFreq(
             self.beam, self.profile,
@@ -273,11 +309,13 @@ class LHCInjection:
     def construct_tracker(self):
         print("Constructing tracker")
         # Initialize the RF tracker
-        self.rf_tracker = RingAndRFTracker(self.rfstation, self.beam,
-                                           BeamFeedback=self.beam_feedback,
-                                           TotalInducedVoltage=self.induced_voltage,
-                                           Profile=self.profile,
-                                           interpolation=True)
+        self.rf_tracker = RingAndRFTracker(
+            self.rfstation, self.beam,
+            BeamFeedback=self.beam_feedback,
+            TotalInducedVoltage=self.induced_voltage,
+            Profile=self.profile,
+            interpolation=True
+        )
 
     def compute_losses(self):
         self.beam.losses_separatrix(self.ring, self.rfstation)
@@ -295,6 +333,7 @@ class LHCInjection:
     def track(self):
         self.rf_tracker.track()
         self.profile.track()
+        self.profile_scope.track()
 
     def simulate_on_gpu(self) -> None:
         prepare_gpu_simulation(self)
@@ -311,7 +350,7 @@ def main():
     # Options ----------------------------------------------------------------------------------------------------------
     lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
     LXPLUS = True
-    if 'birkkarlsen-baeck' in os.getcwd():
+    if 'afs' not in os.getcwd():
         lxdir = '../'
         LXPLUS = False
         print('\nRunning locally...')
@@ -345,7 +384,12 @@ def main():
 
     # Adding an impedance model
     if bool(args.include_impedance):
-        lhc_injection.set_induced_voltage(args.impedance_model)
+        lhc_injection.set_induced_voltage(
+            args.impedance_model,
+            effective=args.broadband,
+            f_cutoff=args.f_cutoff,
+            z_over_n=args.z_over_n
+        )
 
     # Adding the beam feedback
     if bool(args.include_global):
@@ -376,13 +420,18 @@ def main():
         'rms_emittance': np.zeros(lhc_injection.N_t // dt_cont),
     }
 
-    for i in range(lhc_injection.N_t):
+    beam_profile = np.zeros(
+        (lhc_injection.N_t // dt_cont, lhc_injection.profile_scope.n_slices)
+    )
+    print(beam_profile.shape)
+
+    for i in tqdm(range(lhc_injection.N_t), disable=LXPLUS):
         lhc_injection.track()
 
-        if i % dt_int == 0:
+        if i % dt_int == 0 and lhc_injection.induced_voltage is not None:
             lhc_injection.compute_induced_voltage()
 
-        if (i - 1) % dt_cont == 0 and lhc_injection.induced_voltage is not None:
+        if (i - 1) % dt_cont == 0:
             lhc_injection.compute_losses()
 
             evolution['time'][indx] = (i - 1) * lhc_injection.rfstation.t_rev[lhc_injection.rfstation.counter[0]]
@@ -396,17 +445,21 @@ def main():
             evolution['dE_mean'][indx] = lhc_injection.beam.mean_dE
             evolution['rms_emittance'][indx] = lhc_injection.beam.epsn_rms_l
 
+            beam_profile[indx, :] = lhc_injection.profile_scope.n_macroparticles
+
             indx += 1
 
         if i % dt_beam == 0:
             df = pd.DataFrame(evolution)
             df.to_hdf(save_to + 'output.h5', 'Beam')
+            np.save(save_to + 'beam_profile.npy', beam_profile)
 
         if i % dt_ld == 0:
             lhc_injection.save_distribution(save_to)
 
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
+    np.save(save_to + 'beam_profile.npy', beam_profile)
     lhc_injection.save_distribution(save_to)
 
 

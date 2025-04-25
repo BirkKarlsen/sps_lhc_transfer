@@ -23,6 +23,7 @@ from blond.impedances.impedance import TotalInducedVoltage, InducedVoltageFreq
 from blond.impedances.impedance_sources import InputTable
 
 from SPS.impedance_scenario import scenario, impedance2blond
+from tqdm import tqdm
 
 
 def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
@@ -100,9 +101,9 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     beam.dt = gen_beam[0, :] + ddt
 
     # Profile
-    profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-0.5) + ddt,
-                      cut_right=rfstation.t_rf[0, 0] * (N_buckets + 0.5) + ddt,
-                      n_slices=int(round(2 ** 7 * (1 + N_buckets)))))
+    profile = Profile(beam, CutOptions=CutOptions(cut_left=rfstation.t_rf[0, 0] * (-1) + ddt,
+                      cut_right=rfstation.t_rf[0, 0] * (N_buckets + 1) + ddt,
+                      n_slices=int(round(2 ** 7 * (2 + N_buckets)))))
 
     # Modify cuts of the Beam Profile
     beam.statistics()
@@ -122,15 +123,31 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     total_imp = TotalInducedVoltage(beam, profile, [impedance_freq])
 
     # SPS Cavity Controller
-    Commissioning = SPSCavityLoopCommissioning(debug=False, open_loop=False, open_fb=False, open_drive=False,
-                                               open_ff=bool(args.open_ff), cpp_conv=False, pwr_clamp=False)
-    CF = SPSCavityFeedback(rfstation, profile, Commissioning=Commissioning, post_LS2=True,
-                           G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx, a_comb=args.a_comb,
-                           V_part=args.v_part, turns=1000, df=0)
+    commissioning = SPSCavityLoopCommissioning(
+        debug=False, open_loop=False, open_fb=False, open_drive=False,
+        open_ff=bool(args.open_ff), cpp_conv=False, pwr_clamp=False
+    )
+    cavity_feedback = SPSCavityFeedback(
+        rfstation, profile, commissioning=commissioning, post_LS2=True,
+        G_ff=G_ff, G_llrf=G_llrf, G_tx=G_tx, a_comb=args.a_comb,
+        V_part=args.v_part, turns=1000, df=0
+    )
+    volt_3sec = np.mean(np.abs(cavity_feedback.OTFB_1.V_ANT_COARSE))
+    volt_3sec_target = np.mean(np.abs(cavity_feedback.OTFB_1.V_SET))
+    volt_4sec = np.mean(np.abs(cavity_feedback.OTFB_2.V_ANT_COARSE))
+    volt_4sec_target = np.mean(np.abs(cavity_feedback.OTFB_2.V_SET))
+    init_volt = np.mean(np.abs(cavity_feedback.OTFB_1.V_ANT_COARSE) * cavity_feedback.OTFB_1.n_cavities) \
+                + np.mean(np.abs(cavity_feedback.OTFB_2.V_ANT_COARSE) * cavity_feedback.OTFB_2.n_cavities)
+    print(f'Target voltage: {V / 1e6:.3f} MV')
+    print(f'Actual voltage: {init_volt / 1e6:.3f} MV')
+    print(f'\tTarget for 3-section was {volt_3sec_target / 1e6:.3f} MV while actual was {volt_3sec / 1e6:.3f} MV')
+    print(f'\tTarget for 4-section was {volt_4sec_target / 1e6:.3f} MV while actual was {volt_4sec / 1e6:.3f} MV')
 
     # Tracker Object without SPS OTFB
-    SPS_rf_tracker = RingAndRFTracker(rfstation, beam, TotalInducedVoltage=total_imp,
-                                      CavityFeedback=CF, Profile=profile, interpolation=True)
+    SPS_rf_tracker = RingAndRFTracker(
+        rfstation, beam, TotalInducedVoltage=total_imp,
+        CavityFeedback=cavity_feedback, Profile=profile, interpolation=True
+    )
     SPS_tracker = FullRingAndRF([SPS_rf_tracker])
 
     # Simulating -------------------------------------------------------------------------------------------------------
@@ -148,12 +165,14 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
             os.makedirs(save_to)
 
     # Setting diagnostics function
-    diagnostics = SPSDiagnostics(SPS_rf_tracker, profile, total_imp, CF, ring, save_to, lxdir, N_bunches,
-                                 setting=args.diag_setting, dt_cont=args.dt_cont,
-                                 dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
+    diagnostics = SPSDiagnostics(
+        SPS_rf_tracker, profile, total_imp, cavity_feedback, ring, save_to, lxdir, N_bunches,
+        setting=args.diag_setting, dt_cont=args.dt_cont,
+        dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld
+    )
 
     # Main for loop
-    for i in range(N_t):
+    for i in tqdm(range(N_t), disable=LXPLUS):
         SPS_tracker.track()
         profile.track()
         total_imp.induced_voltage_sum()
@@ -191,7 +210,7 @@ def main():
     # Options ----------------------------------------------------------------------------------------------------------
     lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
     LXPLUS = True
-    if 'birkkarlsen-baeck' in os.getcwd():
+    if 'afs' not in os.getcwd():
         lxdir = '../'
         LXPLUS = False
         print('\nRunning locally...')

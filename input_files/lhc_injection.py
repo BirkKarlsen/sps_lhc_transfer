@@ -11,6 +11,7 @@ import os
 from scipy.constants import c
 import yaml
 from datetime import date
+from tqdm import tqdm
 
 from beam_dynamics_tools.simulation_functions.diagnostics.lhc_diagnostics import LHCDiagnostics
 from beam_dynamics_tools.simulation_functions.machine_beam_processes import fetch_momentum_program
@@ -106,9 +107,14 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     beam.dt = imported_beam[0, :] - Dt + ddt + args.phase_error / 360 * rfstation.t_rf[0, 0]
 
     # Beam Profile
-    profile = Profile(beam, CutOptions(cut_left=-1.5 * rfstation.t_rf[0, 0] + ddt,
-                                       cut_right=(N_buckets + 1.5) * rfstation.t_rf[0, 0] + ddt,
-                                       n_slices=(N_buckets + 3) * 2**7))
+    profile = Profile(
+        beam, 
+        CutOptions(
+            cut_left=-1.5 * rfstation.t_rf[0, 0] + ddt,
+            cut_right=(N_buckets + 1.5) * rfstation.t_rf[0, 0] + ddt,
+            n_slices=(N_buckets + 3) * 2**6
+        )
+    )
     # Modify cuts of the Beam Profile
     beam.statistics()
     profile.cut_options.track_cuts(beam)
@@ -133,25 +139,34 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
     # LHC Cavity Controller
     if bool(args.include_local):
-        RFFB = LHCCavityLoopCommissioning(G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
-                                          power_thres=args.clamping_thres, clamping=bool(args.clamp))
+        RFFB = LHCCavityLoopCommissioning(
+            G_a=G_a, G_d=G_d, tau_d=tau_d, tau_a=tau_a, alpha=a_comb, mu=mu, G_o=G_o,
+            power_thres=args.clamping_thres, clamping=bool(args.clamp),
+            open_otfb=args.open_otfb
+        )
 
-        CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
-                           f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
-                           Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
+        cavity_loop = LHCCavityLoop(
+            rfstation, profile, RFFB=RFFB,
+            f_c=rfstation.omega_rf[0, 0]/(2 * np.pi) + df,
+            Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb
+        )
 
         if bool(args.pre_detune):
-            CL.rf_beam_current()
-            df = LHCCavityLoop.half_detuning(np.max(np.abs(CL.I_BEAM_COARSE)),
-                                             CL.R_over_Q, rfstation.omega_rf[0, 0] / (2 * np.pi),
-                                             rfstation.voltage[0, 0] / 8)
+            cavity_loop.rf_beam_current()
+            df = LHCCavityLoop.half_detuning(
+                np.max(np.abs(cavity_loop.I_BEAM_COARSE)),
+                cavity_loop.R_over_Q, rfstation.omega_rf[0, 0] / (2 * np.pi),
+                rfstation.voltage[0, 0] / 8
+            )
             print(f'Setting pre-detuning to {df/1e3:.3f} kHz')
 
-            CL = LHCCavityLoop(rfstation, profile, RFFB=RFFB,
-                               f_c=rfstation.omega_rf[0, 0] / (2 * np.pi) + df,
-                               Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb)
+            cavity_loop = LHCCavityLoop(
+                rfstation, profile, RFFB=RFFB,
+                f_c=rfstation.omega_rf[0, 0] / (2 * np.pi) + df,
+                Q_L=Q_L, tau_loop=tau_loop, n_pretrack=100, tau_otfb=tau_otfb
+            )
     else:
-        CL = None
+        cavity_loop = None
 
     # LHC beam-phase loop and synchronization loop
     if args.pl_gain is None:
@@ -165,17 +180,25 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         SL_gain = args.sl_gain
 
     if bool(args.include_global):
-        bl_config = {'machine': 'LHC',
-                     'PL_gain': PL_gain,
-                     'SL_gain': SL_gain}
-        BL = BeamFeedback(ring, rfstation, profile, bl_config)
+        bl_config = {
+            'machine': 'LHC',
+            'PL_gain': PL_gain,
+            'SL_gain': SL_gain
+        }
+        beam_loop = BeamFeedback(
+            ring, rfstation, profile, bl_config,
+            CavityFeedback=cavity_loop,
+            current_thres=0.5
+        )
     else:
-        BL = None
+        beam_loop = None
 
     # RF tracker object
-    rftracker = RingAndRFTracker(rfstation, beam, Profile=profile, interpolation=True,
-                                 CavityFeedback=CL, BeamFeedback=BL,
-                                 TotalInducedVoltage=total_Vind)
+    rftracker = RingAndRFTracker(
+        rfstation, beam, Profile=profile, interpolation=True,
+        CavityFeedback=cavity_loop, BeamFeedback=beam_loop,
+        TotalInducedVoltage=total_Vind
+    )
 
     LHC_tracker = FullRingAndRF([rftracker])
 
@@ -197,12 +220,14 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     injection_scheme = fetch_from_yaml(args.scheme, lxdir + 'injection_schemes/')
 
     # Setting diagnostics function
-    diagnostics = LHCDiagnostics(rftracker, profile, total_Vind, CL, ring, save_to, lxdir, N_bunches,
-                                 injection_scheme=injection_scheme, setting=args.diag_setting, dt_cont=args.dt_cont,
-                                 dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld)
+    diagnostics = LHCDiagnostics(
+        rftracker, profile, total_Vind, cavity_loop, ring, save_to, lxdir, N_bunches,
+        injection_scheme=injection_scheme, setting=args.diag_setting, dt_cont=args.dt_cont,
+        dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld
+    )
 
     # Main for loop
-    for i in range(N_t):
+    for i in tqdm(range(N_t), disable=LXPLUS):
         LHC_tracker.track()
         profile.track()
         if args.include_impedance:
@@ -232,7 +257,7 @@ def main():
     # Options ----------------------------------------------------------------------------------------------------------
     lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
     LXPLUS = True
-    if 'birkkarlsen-baeck' in os.getcwd():
+    if 'afs' not in os.getcwd():
         lxdir = '../'
         LXPLUS = False
         print('\nRunning locally...')
