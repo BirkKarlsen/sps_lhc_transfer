@@ -1,0 +1,23 @@
+# Scan of pre-detuning phase with HL-LHC
+beam_name: 'HL-LHC_OP_4x72b'       # Re-generate these beams with the proper SPS gains to have less quad-osc.
+scheme: 'single_injection.yaml'
+profile_length: 3500
+number_of_turns: 3000
+diag_setting: 1
+dt_cont: 10
+dt_beam: 500
+dt_cl: 500
+dt_prfl: 200
+dt_ld: 500
+delta_frequency:
+  start: 0
+  stop: -26000
+  steps: 101
+  scale: 'linear'
+loaded_q: 20000
+otfb_gain: 10             # Should be a bit less than 10
+analog_gain: 6.79e-6      # Should try to tweak this parameter as well
+voltage: 7.9
+simulated_beam: 1
+include_global: 1
+flavour: 'tomorrow'
