@@ -1,2 +1,3 @@
 # List of injections
-LHC_2024_bcms_72b: [1700, 2000, 1, 72] # injection int bucket, after n turns, simulated, number of bunches
+# Sequence: injection int bucket, after n turns, simulated, number of bunches, phase error [deg.], energy error [MeV]
+LHC_2024_bcms_72b: [1550, 2000, 1, 72, 0.0, 0.0] # injection int bucket, after n turns, simulated, number of bunches
