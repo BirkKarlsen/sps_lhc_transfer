@@ -1,0 +1,48 @@
+# First scan with RF noise to look at out-of-bucket loss as a function of bunch length
+# Bunch generation configuration
+generated_in: 'SPS'
+include_impedance: 1
+broadband: 1
+f_cutoff: 5e9
+z_over_n: 0.082
+# Beam parameters
+intensity:              # Operational LHC intensity during 2023
+  start: 0.0477
+  end: 0.0583
+  steps: 5
+  scale: 'linear'
+n_macroparticles: 2000000
+exponent: 1.5
+bunchlength:
+  start: 0.4                # [ns]
+  stop: 0.7                 # [ns]
+  steps: 5                  # A scan in bunch length to look at losses as a function of bunch length
+  scale: 'linear'
+# Tracking configuration
+number_of_turns: 10000     # Number of turns corresponding to 5 minutes
+diag_setting: 1
+dt_cont: 1
+dt_beam: 1000
+dt_cl: 1000
+dt_prfl: 2000
+dt_ld: 2000
+dt_int: 1
+# SPS settings
+voltage_200: 4.91
+voltage_800: 0.10
+# LHC settings
+energy_error:
+  start: 2.5
+  end: 20.3
+  steps: 5
+  scale: 'linear'
+phase_error:
+  start: -38.1
+  end: -19.9
+  steps: 5
+  scale: 'linear'
+include_global: 0           # Including beam-phase loop
+voltage: 1.5
+# HT condor settings
+flavour: 'longlunch'
+run_gpu: 1
