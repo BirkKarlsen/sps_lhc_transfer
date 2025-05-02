@@ -423,6 +423,14 @@ def main():
     beam_profile = np.zeros(
         (lhc_injection.N_t // dt_cont, lhc_injection.profile_scope.n_slices)
     )
+
+    save_to_binary = np.save
+
+    if bool(args.run_gpu):
+        import cupy as cp
+        beam_profile = cp.array(beam_profile)
+        save_to_binary = cp.save
+
     print(beam_profile.shape)
 
     for i in tqdm(range(lhc_injection.N_t), disable=LXPLUS):
@@ -452,14 +460,15 @@ def main():
         if i % dt_beam == 0:
             df = pd.DataFrame(evolution)
             df.to_hdf(save_to + 'output.h5', 'Beam')
-            np.save(save_to + 'beam_profile.npy', beam_profile)
+
+            save_to_binary(save_to + 'beam_profile.npy', beam_profile)
 
         if i % dt_ld == 0:
             lhc_injection.save_distribution(save_to)
 
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
-    np.save(save_to + 'beam_profile.npy', beam_profile)
+    save_to_binary(save_to + 'beam_profile.npy', beam_profile)
     lhc_injection.save_distribution(save_to)
 
 
