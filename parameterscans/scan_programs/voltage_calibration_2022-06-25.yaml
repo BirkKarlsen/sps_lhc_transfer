@@ -8,7 +8,7 @@ z_over_n: 0.082
 # Beam parameters
 intensity:              # Operational LHC intensity during 2023
   start: 0.0477
-  end: 0.0583
+  stop: 0.0583
   steps: 5
   scale: 'linear'
 n_macroparticles: 2000000
@@ -33,12 +33,12 @@ voltage_800: 0.10
 # LHC settings
 energy_error:
   start: 2.5
-  end: 20.3
+  stop: 20.3
   steps: 5
   scale: 'linear'
 phase_error:
   start: -38.1
-  end: -19.9
+  stop: -19.9
   steps: 5
   scale: 'linear'
 include_global: 0           # Including beam-phase loop
