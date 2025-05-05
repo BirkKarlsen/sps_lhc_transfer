@@ -21,11 +21,11 @@ bunchlength:
 # Tracking configuration
 number_of_turns: 10000     # Number of turns corresponding to 5 minutes
 diag_setting: 1
-dt_cont: 1
+dt_cont: 2
 dt_beam: 1000
 dt_cl: 1000
 dt_prfl: 2000
-dt_ld: 2000
+dt_ld: 10001
 dt_int: 1
 # SPS settings
 voltage_200: 8.7
