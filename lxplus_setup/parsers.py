@@ -5,7 +5,6 @@ Author: Birk Emil Karlsen-Baeck
 '''
 
 from jsonargparse import ArgumentParser
-from traitlets import default
 
 
 def single_bunch_simulation_parser(add_help=False):
