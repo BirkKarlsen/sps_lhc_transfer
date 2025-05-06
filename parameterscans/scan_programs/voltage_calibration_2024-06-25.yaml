@@ -11,7 +11,8 @@ intensity:              # Operational LHC intensity during 2023
   stop: 0.0529
   steps: 5
   scale: 'linear'
-n_macroparticles: 2000000
+n_macroparticles: 20000000
+slice_exponent: 8
 exponent: 1.5
 bunchlength:
   start: 0.784                # [ns]
