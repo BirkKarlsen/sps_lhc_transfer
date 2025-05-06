@@ -5,6 +5,7 @@ Author: Birk Emil Karlsen-Baeck
 '''
 
 from jsonargparse import ArgumentParser
+from traitlets import default
 
 
 def single_bunch_simulation_parser(add_help=False):
@@ -63,6 +64,10 @@ def single_bunch_simulation_parser(add_help=False):
                         help='The turns between measuring the beam line density; default is every 100 turns')
     parser.add_argument('--dt_int', '-dint', type=int, default=1,
                         help='The turns between calculating the beam induced voltage; default is every turn')
+    parser.add_argument('--save_dist', type=int, default=0,
+                        help='Option to save macro-particle distribution; default is False (0)')
+    parser.add_argument('--slice_exponent', type=int, default=6,
+                        help='Number of slices per bucket in powers of 2; default is 6 (2^6)')
 
     # Parsers for the global feedback
     parser.add_argument('--include_global', '-igl', type=int, default=0,

@@ -178,13 +178,13 @@ class LHCInjection:
             n_rf=1
         )
 
-    def set_profile(self):
+    def set_profile(self, slices: int = 6):
         self.profile = Profile(
             self.beam,
             CutOptions(
                 -1.5 * self.rfstation.t_rf[0, 0],
                 2.5 * self.rfstation.t_rf[0, 0],
-                4 * (2 ** 6)
+                4 * (2 ** slices)
             ),
             FitOptions(fit_option='fwhm')
         )
@@ -380,7 +380,7 @@ def main():
     lhc_injection.inject_beam(sps_generation.beam, injection_shift)
     lhc_injection.set_injection_errors(args.energy_error, args.phase_error)
 
-    lhc_injection.set_profile()
+    lhc_injection.set_profile(args.slice_exponent)
 
     # Adding an impedance model
     if bool(args.include_impedance):
@@ -463,13 +463,14 @@ def main():
 
             save_to_binary(save_to + 'beam_profile.npy', beam_profile)
 
-        if i % dt_ld == 0:
+        if i % dt_ld == 0 and bool(args.save_dist):
             lhc_injection.save_distribution(save_to)
 
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
     save_to_binary(save_to + 'beam_profile.npy', beam_profile)
-    lhc_injection.save_distribution(save_to)
+    if bool(args.save_dist):
+        lhc_injection.save_distribution(save_to)
 
 
 if __name__ == "__main__":
