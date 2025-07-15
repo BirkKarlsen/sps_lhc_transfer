@@ -19,6 +19,10 @@ parser.add_argument('--beam_process', '-bp', type=str, choices=['inj', 'fltbttm'
                     help='Choose the part of the LHC cycle to simualte.')
 parser.add_argument('--run_gpu', '-gpu', type=int, default=0,
                     help='Option to run the simulation on a GPU; default is False (0)')
+parser.add_argument('--permutations', '-pm', type=int, default=1,
+                    help='Option to choose to every permutation of the scanned parameters (grid scan)'
+                         'or to have the values correlated with each other; default is to do the permutations'
+                         '(True, 1)')
 
 args = parser.parse_args()
 
@@ -30,14 +34,17 @@ import itertools
 from datetime import date
 
 from beam_dynamics_tools.data_management.importing_data import fetch_from_yaml, make_and_write_yaml
-from beam_dynamics_tools.analytical_functions.mathematical_functions import to_linear
 
 from lxplus_setup.parsers import parse_arguments_from_dictonary
+from parameterscans.param_scan_utils import (generate_sequential_scan,
+                                             generate_random_scan,
+                                             generate_grid_scan,
+                                             generate_correlated_scan)
 
 # Directories ---------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if 'birkkarlsen-baeck' in os.getcwd():
+if not 'cern.ch' in os.getcwd():
     lxdir = '../'
     LXPLUS = False
     print('\nRunning locally...')
@@ -66,13 +73,19 @@ scan_dict = {}
 for param in scans:
     if type(param_dict[param]) is not dict:
         scan_vals = param_dict[param]
-    elif param_dict[param]['scale'] == 'dB':
-        scan_vals_dB = np.linspace(param_dict[param]['start'], param_dict[param]['stop'],
-                                   param_dict[param]['steps'])
-        scan_vals = to_linear(scan_vals_dB)
+    elif 'mean' in param_dict[param]:
+        scan_vals = generate_random_scan(
+            param_dict[param]['mean'],
+            param_dict[param]['std'],
+            param_dict[param]['n_samples'],
+        )
     else:
-        scan_vals = np.linspace(float(param_dict[param]['start']), float(param_dict[param]['stop']),
-                                param_dict[param]['steps'])
+        scan_vals = generate_sequential_scan(
+            param_dict[param]['start'],
+            param_dict[param]['stop'],
+            param_dict[param]['steps'],
+            param_dict[param]['scale']
+        )
 
     scan_dict[param] = scan_vals
 
@@ -88,35 +101,15 @@ if LXPLUS:
     os.makedirs(save_to, exist_ok=True)
     os.system(f'which python3')
 
-configurations = []
-for arguments in itertools.product(*scan_dict.values()):
-    sim_name_i = 'sim'
-    sim_arg_i = ''
-    config_i = {}
 
-    for i, param in enumerate(scans):
-        if type(arguments[i]) is str:
-            sim_name_i += f'_{param}{arguments[i]}'
-        else:
-            sim_name_i += f'_{param}{arguments[i]:.3e}'
-        sim_arg_i += f'--{param} {arguments[i]} '
-
-        try:
-            config_i[param] = arguments[i].item()
-        except:
-            config_i[param] = arguments[i]
-
-    config_i['simulation_name'] = sim_folder_name + sim_name_i
-    config_i = config_i | reg_params
-    config_i.pop('flavour', None)
-    configurations.append(sim_name_i + '/config.yaml')
-
-    if LXPLUS:
-        os.makedirs(save_to + sim_name_i, exist_ok=True)
-        make_and_write_yaml('config.yaml', save_to + sim_name_i + '/', config_i)
-    else:
-        print(sim_arg_i)
-        print(config_i['simulation_name'])
+if args.permutations:
+    configurations = generate_grid_scan(
+        scan_dict, scans, reg_params, sim_folder_name, save_to, LXPLUS
+    )
+else:
+    configurations = generate_correlated_scan(
+        scan_dict, scans, reg_params, sim_folder_name, save_to, LXPLUS
+    )
 
 if LXPLUS:
     os.system(f'touch {sub_dir}{sim_folder_name}configs.txt')
