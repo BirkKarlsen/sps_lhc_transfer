@@ -7,18 +7,16 @@ f_cutoff: 5e9
 z_over_n: 0.082
 # Beam parameters
 intensity:              # Operational LHC intensity during 2023
-  start: 0.081
-  stop: 0.103
-  steps: 5
-  scale: 'linear'
+  mean: 0.092
+  std: 0.012
+  n_samples: 1000
 n_macroparticles: 20000000
 slice_exponent: 8
 exponent: 1.5
 bunchlength:
-  start: 1.55                # [ns]
-  stop: 1.664                 # [ns]
-  steps: 5                  # A scan in bunch length to look at losses as a function of bunch length
-  scale: 'linear'
+  mean: 1.607                # [ns]
+  std: 0.057                 # [ns]
+  n_samples: 1000
 # Tracking configuration
 number_of_turns: 10000     # Number of turns corresponding to 5 minutes
 diag_setting: 1
@@ -33,15 +31,13 @@ voltage_200: 7.5
 voltage_800: 0.16
 # LHC settings
 energy_error:
-  start: 23.5
-  stop: 32.5
-  steps: 5
-  scale: 'linear'
+  mean: 28.0
+  std: 4.5
+  n_samples: 1000
 phase_error:
-  start: -12.6
-  stop: -1.2
-  steps: 5
-  scale: 'linear'
+  mean: -6.9
+  std: 5.7
+  n_samples: 1000
 include_global: 0           # Including beam-phase loop
 voltage: 1.5
 # HT condor settings
