@@ -76,6 +76,10 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
     N_p *= N_bunches
     N_buckets = args.profile_length
 
+    # Intensity ramp up
+    n_int_ramp = int(0.33 * N_t)
+    N_p_ramp = np.linspace(0, N_p, n_int_ramp)
+
     # Parameters for the SPS Impedance Model
     freqRes = 43.3e3                                        # Frequency resolution [Hz]
     modelStr = "futurePostLS2_SPS_noMain200TWC.txt"         # Name of Impedance Model
@@ -91,7 +95,7 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
 
     # Beam
     ddt = 1000 * rfstation.t_rf[0, 0]
-    beam = Beam(ring, N_m, N_p)
+    beam = Beam(ring, N_m, N_p_ramp[0])
     if pre_beam is None:
         gen_beam = np.load(f'{lxdir}generated_beams/{beam_ID}/generated_beam.npy')
     else:
@@ -171,6 +175,8 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         dt_beam=args.dt_beam, dt_cl=args.dt_cl, dt_prfl=args.dt_prfl, dt_ld=args.dt_ld
     )
 
+    i_ramp = 0
+
     # Main for loop
     for i in tqdm(range(N_t), disable=LXPLUS):
         SPS_tracker.track()
@@ -178,6 +184,11 @@ def sps_simulation(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         total_imp.induced_voltage_sum()
 
         diagnostics.track()
+
+        if i_ramp < n_int_ramp:
+            beam.intensity = N_p_ramp[i_ramp]
+            beam.ratio = beam.intensity / beam.n_macroparticles
+            i_ramp += 1
 
         if i == 0:
             print('\nFor-loop successfully entered')
