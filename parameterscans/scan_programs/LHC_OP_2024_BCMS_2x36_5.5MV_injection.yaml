@@ -6,7 +6,7 @@ profile_length: 900
 number_of_turns: 10000
 # Diagnostics
 diag_setting: 2
-t_cont: 10
+dt_cont: 10
 dt_beam: 500
 dt_cl: 500
 dt_prfl: 10000
