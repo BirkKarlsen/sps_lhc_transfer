@@ -1,5 +1,5 @@
-# Simulation of SPS-LHC injection using the MD standard beam from 2025 including the limited rf power in the SPS
-beam_name: 'LHC_MD_2025_1x72b'
+# Simulation of SPS-LHC injection using the MD standard beam from 2025 but with the full voltage in the SPS
+beam_name: 'HL-LHC_MD_2025_1x72b'
 scheme: 'single_injection.yaml'
 profile_length: 800
 number_of_turns: 10000
