@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import os
 from datetime import date
@@ -21,6 +22,8 @@ from blond.intra_beam_scattering.intra_beam_scattering import NagaitsevScatterin
 from blond.intra_beam_scattering.load_lattice import TwissParameters
 
 from beam_dynamics_tools.analytical_functions.transfer_functions import H_a, H_d, Z_cl
+from beam_dynamics_tools.analytical_functions.potential_wells import (single_rf_potential,
+                                                                      compute_bunch_length)
 
 
 def prepare_gpu_simulation(obj):
@@ -55,6 +58,7 @@ class LHCGeneration:
     full_tracker = None
     exponent = 1.5
     bunch_length = 1.6
+    emittance = 0.58
 
     def __init__(self, args, lxdir):
         print("Setting LHC as machine")
@@ -92,7 +96,13 @@ class LHCGeneration:
                                FitOptions(fit_option='fwhm'))
         self.profile.track()
 
-    def set_induced_voltage(self, model_str: str):
+    def set_induced_voltage(
+            self,
+            model_str: str,
+            effective: bool = False,
+            z_over_n: float = 0.07,
+            f_cutoff: float = 5e9
+    ):
         print(f'Adding induced voltage...')
         f_r = 5e9
         freq_res = 1 / self.rfstation.t_rev[0] / 1
@@ -134,6 +144,15 @@ class LHCGeneration:
             input_table = InputTable(freq, 8 * z_cl.real, 8 * z_cl.imag)
             impedance_list.append(input_table)
 
+        if effective:
+            effective_broadband = Resonators(
+                R_S=f_cutoff * z_over_n / self.ring.f_rev[0],
+                frequency_R=f_cutoff,
+                Q=1
+            )
+
+            impedance_list = [effective_broadband]
+
         impedance_freq = InducedVoltageFreq(
             self.beam, self.profile,
             impedance_list,
@@ -145,6 +164,19 @@ class LHCGeneration:
     def prepare_generation_bunch(self, args, model_str: str):
         self.exponent = args.exponent
         self.bunch_length = args.bunchlength * 1e-9
+        self.emittance = args.emittance
+
+        if self.emittance is not None:
+            rf_potential = single_rf_potential(
+                V=args.voltage * 1e6,
+                harmonic=self.h,
+                gamma_t=args.gamma_t,
+                C=self.C,
+                p_s=self.p_s
+            )
+            self.bunch_length = compute_bunch_length(
+                self.emittance, rf_potential, [0.1e-9, 2.4e-9]
+            )
 
         print("Adding LHC impedance model")
         if bool(args.include_impedance):
@@ -158,15 +190,36 @@ class LHCGeneration:
         # Initialize the Full Ring and RF tracker
         self.full_tracker = FullRingAndRF([self.rf_tracker])
 
-    def run_generation(self, n_iterations):
-        print(f"Generating a {self.bunch_length * 1e9:.3f} ns bunch")
-        matched_from_distribution_function(self.beam, self.full_tracker,
-                                           TotalInducedVoltage=self.induced_voltage,
-                                           bunch_length=self.bunch_length,
-                                           bunch_length_fit="fwhm",
-                                           distribution_type="binomial",
-                                           distribution_exponent=self.exponent,
-                                           n_iterations=n_iterations)
+    def run_generation(self, n_iterations, tol=0.001e-9):
+
+        if self.emittance is not None:
+            print(f"Generating a {self.emittance:.3f} eVs bunch")
+            print(f"Equivalent to {self.bunch_length * 1e9:.3f} ns")
+        else:
+            print(f"Generating a {self.bunch_length * 1e9:.3f} ns bunch")
+
+        n_iter = 20
+        iter_num = 0
+
+        while abs(self.bunch_length - self.profile.bunchLength) > tol:
+            matched_from_distribution_function(
+                self.beam, self.full_tracker,
+                TotalInducedVoltage=self.induced_voltage,
+                bunch_length=self.bunch_length,
+                bunch_length_fit="fwhm",
+                distribution_type="binomial",
+                distribution_exponent=self.exponent,
+                n_iterations=n_iterations,
+                n_points_potential=1e4,
+                n_points_grid=int(1e3),
+                dt_margin_percent=0.40,
+            )
+            self.profile.track()
+            print(f"Generated bunch had a length of {self.profile.bunchLength * 1e9:.3f} ns")
+            iter_num += 1
+
+            if iter_num > n_iter:
+                break
 
     def simulate_on_gpu(self) -> None:
         prepare_gpu_simulation(self)
@@ -235,7 +288,13 @@ class LHCFlatBottom:
         self.beam.dE[:] = beam.dE[:]
         self.beam.dt[:] = beam.dt[:] + injection_shift
 
-    def set_induced_voltage(self, model_str: str):
+    def set_induced_voltage(
+            self,
+            model_str: str,
+            effective: bool = False,
+            z_over_n: float = 0.07,
+            f_cutoff: float = 5e9
+    ):
         print(f'Adding induced voltage...')
         f_r = 5e9
         freq_res = 1 / self.rfstation.t_rev[0] / 1
@@ -276,6 +335,15 @@ class LHCFlatBottom:
 
             input_table = InputTable(freq, 8 * z_cl.real, 8 * z_cl.imag)
             impedance_list.append(input_table)
+
+        if effective:
+            effective_broadband = Resonators(
+                R_S=f_cutoff * z_over_n / self.ring.f_rev[0],
+                frequency_R=f_cutoff,
+                Q=1
+            )
+
+            impedance_list = [effective_broadband]
 
         impedance_freq = InducedVoltageFreq(
             self.beam, self.profile,
@@ -459,7 +527,7 @@ def main():
         lhc_flatbottom.compute_scattering_params()
         print(f'Initial longitudinal growth rate {lhc_flatbottom.scattering.t_z:.6f} s')
 
-    for i in range(lhc_flatbottom.N_t):
+    for i in tqdm(range(lhc_flatbottom.N_t), disable=LXPLUS):
         if i % dt_int == 0 and lhc_flatbottom.induced_voltage is not None:
             lhc_flatbottom.compute_induced_voltage()
 
