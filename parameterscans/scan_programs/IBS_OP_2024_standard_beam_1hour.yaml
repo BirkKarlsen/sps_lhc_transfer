@@ -6,13 +6,13 @@ impedance_model: 'LHC_450GeV_2024_june.dat'
 intra_beam: 1
 # Beam parameters
 intensity: 1.59             # Operational LHC intensity during 2023
-n_macroparticles: 1000000
-exponent: 1.5
-bunchlength: 1.25           # [ns]
+n_macroparticles: 1_000_000
+exponent: 2.0
+emittance: 0.442             # [eVs]
 emittance_x: 1.57e-6        # [m]
 emittance_y: 1.59e-6        # [m]
 # Tracking configuration
-number_of_turns: 40500000   # Number of turns corresponding to 20 minutes
+number_of_turns: 10_000_000 #40500000   # Number of turns corresponding to 20 minutes
 include_global: 0           # Without beam-phase loop
 dt_cont: 1000               # The turns between the continuous signals are sampled
 dt_beam: 50000              # The turns between beam parameters are measured
@@ -22,5 +22,5 @@ update_ibs: 10000           # The turns between updating the ibs parameters
 # LHC settings
 voltage: 5                  # [MV]
 # HT condor settings
-flavour: 'nextweek'         # job should be much longer
+flavour: 'longlunch' #'nextweek'         # job should be much longer
 run_gpu: 1
