@@ -31,4 +31,6 @@ phase_error: # 5.6, -6.6
   scale: 'linear'
 simulated_beam: 1
 include_global: 1
+# Impedance
+impedance_model: 'HL-LHC_450GeV.dat'
 flavour: 'workday'
