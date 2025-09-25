@@ -58,7 +58,7 @@ class LHCGeneration:
     full_tracker = None
     exponent = 1.5
     bunch_length = 1.6
-    emittance = 0.58
+    emittance = None
 
     def __init__(self, args, lxdir):
         print("Setting LHC as machine")

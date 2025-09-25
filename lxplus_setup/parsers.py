@@ -45,6 +45,8 @@ def single_bunch_simulation_parser(add_help=False):
     parser.add_argument('--bunchlength', '-bl', type=float, default=1.6,
                         help='Bunch length FWHM for the bunches; if passed all bunches have the same bunch length; '
                              'default is 1.6 ns')
+    parser.add_argument('--emittance', '-em', type=float, default=None,
+                        help='Emittance from FWHM for the bunches; if passed it overrides bunchlength argument')
 
     # Parsers for simulation
     parser.add_argument('--number_of_turns', '-nt', type=int, default=2000,
