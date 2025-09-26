@@ -5,12 +5,12 @@ include_impedance: 0        # Include the LHC impedance model
 impedance_model: 'LHC_450GeV_2024_june.dat'
 intra_beam: 1
 # Beam parameters
-intensity: 1.59             # Operational LHC intensity during 2023
+intensity: 2.38             # Operational LHC intensity during 2023
 n_macroparticles: 1_000_000
 exponent: 2.0
-emittance: 0.442             # [eVs]
-emittance_x: 1.57e-6        # [m]
-emittance_y: 1.59e-6        # [m]
+emittance: 0.552             # [eVs]
+emittance_x: 2.00e-6        # [m]
+emittance_y: 2.02e-6        # [m]
 # Tracking configuration
 number_of_turns: 40500000   # Number of turns corresponding to 20 minutes
 include_global: 0           # Without beam-phase loop
