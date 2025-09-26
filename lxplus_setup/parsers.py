@@ -316,28 +316,33 @@ def lhc_llrf_argument_parser(add_help=False):
     parser.add_argument('--sl_gain', '-slg', type=float,
                         help='The synchro loop gain; default is PL_gain/10.')
 
+    # Impedance settings
+    parser.add_argument('--include_impedance', '-imp', type=int, default=1,
+                        help='Option to include LHC impedance model; default is to include it (1)')
+    parser.add_argument('--impedance_model', '-im', type=str,
+                        default='LHC_450GeV.dat',
+                        help='Option to choose which impedance model to use; default is standard LHC injection.')
+    parser.add_argument('--include_cc_hom', type=int, default=0,
+                        help='Option to manually include crab cavity HOM in the impedance; '
+                             'default is to exclude it (0)')
+
     # Parsers for the LHC globally
     parser.add_argument('--voltage', '-vo', type=float, default=4,
                         help='Voltage of the 400 MHz RF system [MV]; default is 4')
     parser.add_argument('--gamma_t', '-gt', type=float, default=53.606713,
                         help='Transition gamma of the LHC; default is 53.606713')
-    parser.add_argument('--include_impedance', '-imp', type=int, default=1,
-                        help='Option to include LHC impedance model; default is to include it (1)')
-    parser.add_argument('--simulated_beam', '-sb', type=int, default=0,
-                        help='Input a beam simulated at SPS flattop or a beam directly from generation; '
-                             'default is from generation')
     parser.add_argument('--energy_error', '-eer', type=float, default=0,
                         help='Option to add energy offset [MeV] to initial batch; default is 0 MeV')
     parser.add_argument('--phase_error', '-per', type=float, default=0,
                         help='Option to add phase offset [degrees] to initial batch; default is 0')
-    parser.add_argument('--impedance_model', '-im', type=str,
-                        default='LHC_450GeV.dat',
-                        help='Option to choose which impedance model to use; default is standard LHC injection.')
     parser.add_argument('--ramp', '-r', type=float,
                         help='Option to include a different final energy [GeV] and this a ramp in simulation; '
                              'if nothing is passed then there will be no ramp.')
     parser.add_argument('--momentum_program', '-mp', type=str, default='LHC_momentum_programme_6.8TeV.csv',
                         help='Option to choose the momentum program for the LHC default is the 6.8 TeV ramp')
+    parser.add_argument('--simulated_beam', '-sb', type=int, default=0,
+                        help='Input a beam simulated at SPS flattop or a beam directly from generation; '
+                             'default is from generation')
     parser.add_argument('--scheme', '-shm', type=str, default='single_injection.yaml',
                         help='Option to input injection scheme into the simulation, default is no injections.')
 

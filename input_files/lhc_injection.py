@@ -24,7 +24,7 @@ from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.llrf.cavity_feedback import LHCCavityLoopCommissioning, LHCCavityLoop
 from blond.llrf.beam_feedback import BeamFeedback
-from blond.impedances.impedance_sources import InputTable
+from blond.impedances.impedance_sources import InputTable, Resonators
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 
 
@@ -130,8 +130,22 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         imp_ind = imp_data[:, 0] < 2 * f_r
         impedance_table = InputTable(imp_data[imp_ind, 0], imp_data[imp_ind, 1], imp_data[imp_ind, 2])
 
-        impedance_freq = InducedVoltageFreq(beam, profile, [impedance_table],
-                                            frequency_resolution=freq_res)
+        impedance_ls = [impedance_table]
+
+        if bool(args.include_cc_hom):
+            # Crab Cavity HOM
+            R_sh = 284e3
+            hom_freq = 582e6
+            hom_q = 1360
+            cc_hom = Resonators(
+                R_sh, hom_freq, hom_q
+            )
+            impedance_ls.append(cc_hom)
+
+        impedance_freq = InducedVoltageFreq(
+            beam, profile, impedance_ls,
+            frequency_resolution=freq_res
+        )
 
         total_Vind = TotalInducedVoltage(beam, profile, [impedance_freq])
     else:
