@@ -126,9 +126,20 @@ def lhc_injection(args, LXPLUS, lxdir, pre_beam=None, generation_dict=None):
         f_r = 5e9
         freq_res = 1 / rfstation.t_rev[0]
 
-        imp_data = np.loadtxt(lxdir + 'impedance/' + args.impedance_model, skiprows=1)
-        imp_ind = imp_data[:, 0] < 2 * f_r
-        impedance_table = InputTable(imp_data[imp_ind, 0], imp_data[imp_ind, 1], imp_data[imp_ind, 2])
+        model_str = args.impedance_model
+
+        if model_str.endswith('.dat'):
+            imp_data = np.loadtxt(lxdir + 'impedance/' + model_str, skiprows=1)
+            imp_ind = imp_data[:, 0] < 2 * f_r
+            impedance_table = InputTable(imp_data[imp_ind, 0], imp_data[imp_ind, 1], imp_data[imp_ind, 2])
+            print(f'Running with {model_str} which is a dat file')
+        else:
+            imp_data = np.load(lxdir + 'impedance/' + model_str)
+            imp_ind = imp_data['imp_freq'] < 2 * f_r
+            impedance_table = InputTable(
+                imp_data['imp_freq'][imp_ind], imp_data['imp_real'][imp_ind], imp_data['imp_imag'][imp_ind]
+            )
+            print(f'Running with {model_str} which is a npz file')
 
         impedance_ls = [impedance_table]
 
