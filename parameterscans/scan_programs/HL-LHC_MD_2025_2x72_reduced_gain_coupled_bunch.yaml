@@ -1,7 +1,7 @@
 # Simulation of SPS-LHC injection using the MD standard beam from 2025 but with the full voltage in the SPS
-beam_name: 'HL-LHC_MD_2025_1x72b_reduced_gain'
+beam_name: 'HL-LHC_MD_2025_2x72b_reduced_gain'
 scheme: 'single_injection.yaml'
-profile_length: 800
+profile_length: 1600
 number_of_turns: 100_000
 # Diagnostics
 diag_setting: 2
@@ -24,6 +24,6 @@ simulated_beam: 1
 include_global: 1
 # Impedance
 include_impedance: 1
-impedance_model: 'HL-LHC_450GeV.dat'
-include_cc_hom: 1
+impedance_model: 'HL-LHC_450GeV_with_CC_HOM.npz'
+include_cc_hom: 0
 flavour: 'testmatch'
