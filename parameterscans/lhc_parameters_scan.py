@@ -29,7 +29,7 @@ from lxplus_setup.parsers import parse_arguments_from_dictonary
 # Directories ---------------------------------------------------------------------------------------------------------
 lxdir = f'/afs/cern.ch/work/b/bkarlsen/sps_lhc_transfer/'
 LXPLUS = True
-if 'birkkarlsen-baeck' in os.getcwd():
+if not 'cern.ch' in os.getcwd():
     lxdir = '../'
     LXPLUS = False
     print('\nRunning locally...')
@@ -70,7 +70,8 @@ for param in scans:
 
 # Launch scripts
 fixed_arguments = parse_arguments_from_dictonary(reg_params)
-sim_folder_name = args.scan_name[:-5] + '/'
+sim_folder_name = args.scan_name.split('/')[-1][:-5] + '/'
+print(sim_folder_name)
 
 today = date.today()
 save_to = lxdir + f'simulation_results/{today.strftime("%Y-%m-%d")}/{sim_folder_name}'
