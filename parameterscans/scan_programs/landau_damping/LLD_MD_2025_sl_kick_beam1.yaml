@@ -15,7 +15,7 @@ intensity:
     1.36937, 1.71285, 1.71991, 1.73561, 0.69227,
     0.69587, 0.70046, 0.10375, 0.10339, 0.32129
   ]
-n_macroparticles: 50_000_000
+n_macroparticles: 30_000_000
 slice_exponent: 8
 exponent:
   [
