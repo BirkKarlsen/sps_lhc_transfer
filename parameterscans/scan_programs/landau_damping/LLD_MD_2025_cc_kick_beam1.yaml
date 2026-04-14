@@ -42,13 +42,13 @@ bunchlength:
     1.09975, 1.09679, 0.74417, 0.75244, 0.72753
   ]
 # Simulation parameters
-number_of_turns: 69_000
+number_of_turns: 72_000
 diag_setting: 1
 dt_cont: 3
-dt_beam: 1000
-dt_cl: 1000
-dt_prfl: 1000
-dt_ld: 69_001
+dt_beam: 12_000
+dt_cl: 12_000
+dt_prfl: 12_000
+dt_ld: 72_001
 dt_int: 1
 # Phase loop settings
 include_global: 1
