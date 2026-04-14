@@ -77,6 +77,13 @@ def single_bunch_simulation_parser(add_help=False):
                         help='The beam-phase loop gain; default is 1/(5 T_rev).')
     parser.add_argument('--sl_gain', '-slg', type=float,
                         help='The synchro loop gain; default is PL_gain/10.')
+    parser.add_argument('--kick_turn', '-kt', type=int, default=0,
+                        help='Turn index to perform phase kick via the RF system; default is turn 0.')
+    parser.add_argument('--kick_amplitude', '-ka', type=float, default=0.0,
+                        help='The phase value for the kick (deg); default is 0.0 deg.')
+    parser.add_argument('--kick_mode', '-km', type=int, default=0,
+                        help='The mode for the phase kick, mode 0 (default) is no kick, '
+                             'mode 1 is cavity controller, and mode 2 is synchro reference.')
 
     # Parsers for the LHC globally
     parser.add_argument('--voltage', '-vo', type=float, default=4,

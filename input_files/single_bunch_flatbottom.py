@@ -87,13 +87,17 @@ class LHCGeneration:
 
         self.beam = Beam(self.ring, self.N_m, self.N_p)
 
-    def set_profile(self, args):
+    def set_profile(self, slice_exponent):
 
-        self.profile = Profile(self.beam,
-                               CutOptions((-1.5) * self.rfstation.t_rf[0, 0],
-                                          (2.5) * self.rfstation.t_rf[0, 0],
-                                          4 * (2 ** 7)),
-                               FitOptions(fit_option='fwhm'))
+        self.profile = Profile(
+            self.beam,
+            CutOptions(
+                (-1.5) * self.rfstation.t_rf[0, 0],
+                2.5 * self.rfstation.t_rf[0, 0],
+                4 * (2 ** slice_exponent)
+            ),
+            FitOptions(fit_option='fwhm')
+        )
         self.profile.track()
 
     def set_induced_voltage(
@@ -180,7 +184,12 @@ class LHCGeneration:
 
         print("Adding LHC impedance model")
         if bool(args.include_impedance):
-            self.set_induced_voltage(model_str)
+            self.set_induced_voltage(
+                model_str,
+                effective=args.broadband,
+                z_over_n=args.z_over_n,
+                f_cutoff=args.f_cutoff,
+            )
 
         # Initialize the RF tracker
         self.rf_tracker = RingAndRFTracker(self.rfstation, self.beam,
@@ -236,6 +245,7 @@ class LHCFlatBottom:
     beam_feedback = None
     profile = None
     profile_sigma = None
+    profile_scope = None
     induced_voltage = None
     rf_tracker = None
     scattering = None
@@ -264,22 +274,42 @@ class LHCFlatBottom:
             n_rf=1
         )
 
+        if args.kick_mode == 1:
+            self.rfstation.phi_rf[0, args.kick_turn:] = args.kick_amplitude * np.pi / 180
+
         self.track = self.track_without_scattering
 
-    def set_profile(self):
-        self.profile = Profile(self.beam,
-                               CutOptions(-1.5 * self.rfstation.t_rf[0, 0],
-                                          2.5 * self.rfstation.t_rf[0, 0],
-                                          4 * (2 ** 6)),
-                               FitOptions(fit_option='fwhm'))
+    def set_profile(self, slice_exponent):
+        self.profile = Profile(
+            self.beam,
+            CutOptions(
+                -1.5 * self.rfstation.t_rf[0, 0],
+                2.5 * self.rfstation.t_rf[0, 0],
+                4 * (2 ** slice_exponent)
+            ),
+            FitOptions(fit_option='fwhm')
+        )
         self.profile.track()
 
-        self.profile_sigma = Profile(self.beam,
-                                     CutOptions(-1.5 * self.rfstation.t_rf[0, 0],
-                                                2.5 * self.rfstation.t_rf[0, 0],
-                                                4 * (2 ** 6)),
-                                     FitOptions(fit_option='rms'))
+        self.profile_sigma = Profile(
+            self.beam,
+            CutOptions(
+                -1.5 * self.rfstation.t_rf[0, 0],
+                2.5 * self.rfstation.t_rf[0, 0],
+                4 * (2 ** 6)
+            ),
+            FitOptions(fit_option='rms')
+        )
         self.profile_sigma.track()
+
+        self.profile_scope = Profile(
+            self.beam,
+            CutOptions(-0.75 * self.rfstation.t_rf[0, 0],
+                       1.75 * self.rfstation.t_rf[0, 0],
+                       250),
+            FitOptions(fit_option='fwhm')
+        )
+        self.profile_scope.track()
 
     def inject_beam(self, beam: Beam, injection_shift: float = 0):
         print(f'Injected beam with {beam.n_macroparticles} macro particles and {beam.intensity} protons')
@@ -362,7 +392,7 @@ class LHCFlatBottom:
             PL_gain = args.pl_gain
 
         if args.sl_gain is None:
-            SL_gain = PL_gain / 10
+            SL_gain = 1 / (5 * self.ring.t_rev[0]) / 10
         else:
             SL_gain = args.sl_gain
 
@@ -429,10 +459,12 @@ class LHCFlatBottom:
     def track_without_scattering(self):
         self.rf_tracker.track()
         self.profile.track()
+        self.profile_scope.track()
 
     def track_with_scattering(self):
         self.rf_tracker.track()
         self.profile.track()
+        self.profile_scope.track()
         self.profile_sigma.track()
         self.scattering.track()
 
@@ -471,20 +503,25 @@ def main():
 
     # Generate SPS bunch
     lhc_generation = LHCGeneration(args, lxdir)
-    lhc_generation.set_profile(args)
+    lhc_generation.set_profile(slice_exponent=args.slice_exponent)
     # Adding an impedance model
     lhc_generation.prepare_generation_bunch(args=args, model_str=args.impedance_model)
-    lhc_generation.run_generation(n_iterations=30)
+    lhc_generation.run_generation(n_iterations=20)
 
     # LHC injection
     lhc_flatbottom = LHCFlatBottom(args, lxdir=lxdir)
     lhc_flatbottom.inject_beam(lhc_generation.beam)
 
-    lhc_flatbottom.set_profile()
+    lhc_flatbottom.set_profile(slice_exponent=args.slice_exponent)
 
     # Adding an impedance model
     if bool(args.include_impedance):
-        lhc_flatbottom.set_induced_voltage(args.impedance_model)
+        lhc_flatbottom.set_induced_voltage(
+            args.impedance_model,
+            effective=args.broadband,
+            f_cutoff=args.f_cutoff,
+            z_over_n=args.z_over_n
+        )
 
     # Adding the beam feedback
     if bool(args.include_global):
@@ -520,14 +557,35 @@ def main():
         'dE_mean': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'rms_emittance': np.zeros(lhc_flatbottom.N_t // dt_cont),
         'emittance_x': np.zeros(lhc_flatbottom.N_t // dt_cont),
-        'emittance_y': np.zeros(lhc_flatbottom.N_t // dt_cont)
+        'emittance_y': np.zeros(lhc_flatbottom.N_t // dt_cont),
+        'rf_phase': np.zeros(lhc_flatbottom.N_t // dt_cont),
+        'rf_frequency': np.zeros(lhc_flatbottom.N_t // dt_cont),
     }
+
+    beam_profile = np.zeros(
+        (lhc_flatbottom.N_t // dt_cont, lhc_flatbottom.profile_scope.n_slices)
+    )
+
+    save_to_binary = np.save
+
+    if bool(args.run_gpu):
+        import cupy as cp
+        beam_profile = cp.array(beam_profile)
+        save_to_binary = cp.save
+
+    print(beam_profile.shape)
 
     if lhc_flatbottom.scattering is not None:
         lhc_flatbottom.compute_scattering_params()
         print(f'Initial longitudinal growth rate {lhc_flatbottom.scattering.t_z:.6f} s')
 
+
     for i in tqdm(range(lhc_flatbottom.N_t), disable=LXPLUS):
+
+        if i == args.kick_turn and lhc_flatbottom.beam_feedback is not None:
+            if args.kick_mode == 2:
+                lhc_flatbottom.beam_feedback.reference = -args.kick_amplitude * np.pi / 180
+
         if i % dt_int == 0 and lhc_flatbottom.induced_voltage is not None:
             lhc_flatbottom.compute_induced_voltage()
 
@@ -544,6 +602,9 @@ def main():
             evolution['tau_rms'][indx] = lhc_flatbottom.profile_sigma.bunchLength
             evolution['intensity'][indx] = lhc_flatbottom.beam.ratio * lhc_flatbottom.beam.n_macroparticles_alive
 
+            evolution['rf_phase'][indx] = lhc_flatbottom.rfstation.phi_rf[0, i]
+            evolution['rf_frequency'][indx] = lhc_flatbottom.rfstation.omega_rf[0, i] / 2 / np.pi
+
             lhc_flatbottom.beam.statistics()
             evolution['dt_rms'][indx] = lhc_flatbottom.beam.sigma_dt
             evolution['dE_rms'][indx] = lhc_flatbottom.beam.sigma_dE
@@ -557,18 +618,24 @@ def main():
                 evolution['emittance_y'][indx] = lhc_flatbottom.scattering.emittance_y \
                                                  * lhc_flatbottom.beam.beta * lhc_flatbottom.beam.gamma
 
+            beam_profile[indx, :] = lhc_flatbottom.profile_scope.n_macroparticles
+
             indx += 1
 
         if i % dt_beam == 0:
             df = pd.DataFrame(evolution)
             df.to_hdf(save_to + 'output.h5', 'Beam')
 
-        if i % dt_ld == 0:
+            save_to_binary(save_to + 'beam_profile.npy', beam_profile)
+
+        if i % dt_ld == 0 and bool(args.save_dist):
             lhc_flatbottom.save_distribution(save_to)
 
     df = pd.DataFrame(evolution)
     df.to_hdf(save_to + 'output.h5', 'Beam')
-    lhc_flatbottom.save_distribution(save_to)
+    save_to_binary(save_to + 'beam_profile.npy', beam_profile)
+    if bool(args.save_dist):
+        lhc_flatbottom.save_distribution(save_to)
 
 
 if __name__ == "__main__":
