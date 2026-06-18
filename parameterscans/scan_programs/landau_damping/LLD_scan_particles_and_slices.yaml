@@ -1,0 +1,43 @@
+# Single simulation of IBS for a standard bunch beam with average parameters
+# Bunch generation configuration
+generated_in: 'LHC'
+intra_beam: 0
+# Bunch generation inputs
+n_macroparticles:
+  [
+    1_000_000, 2_000_000, 5_000_000,
+    10_000_000, 20_000_000, 30_000_000,
+    60_000_000
+  ]
+slice_exponent:
+  [
+    5, 6, 7, 8, 9, 10
+  ]
+intensity: 1.52521
+exponent: 0.46588
+bunchlength: 1.10183
+# Simulation parameters
+number_of_turns: 72_000
+diag_setting: 1
+dt_cont: 3
+dt_beam: 12_000
+dt_cl: 12_000
+dt_prfl: 12_000
+dt_ld: 72_001
+dt_int: 1
+# Phase loop settings
+include_global: 1
+pl_gain: 0.0
+kick_mode: 2
+kick_turn: 2_000
+kick_amplitude: 20
+# LHC settings
+voltage: 3.5
+# Impedance settings
+include_impedance: 1
+broadband: 1
+f_cutoff: 5e9
+z_over_n: 0.082
+# HT condor settings
+flavour: 'longlunch'         # job should be much longer
+run_gpu: 1
