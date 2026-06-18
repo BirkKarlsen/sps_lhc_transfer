@@ -11,18 +11,30 @@ import argparse
 parser = argparse.ArgumentParser(description='Script to launch a parameter scan defined by a yaml file.',
                                  add_help=True)
 
-parser.add_argument('--scan_name', '-sn', type=str,
-                    default='single_bunch_persistent_oscillations_2.3e11_2024_mini.yaml',
-                    help='Name of the parameter scan to turn.')
-parser.add_argument('--beam_process', '-bp', type=str, choices=['inj', 'fltbttm', 'ramp', 'flttp'],
-                    default='inj',
-                    help='Choose the part of the LHC cycle to simualte.')
-parser.add_argument('--run_gpu', '-gpu', type=int, default=0,
-                    help='Option to run the simulation on a GPU; default is False (0)')
-parser.add_argument('--permutations', '-pm', type=int, default=1,
-                    help='Option to choose to every permutation of the scanned parameters (grid scan)'
-                         'or to have the values correlated with each other; default is to do the permutations'
-                         '(True, 1)')
+parser.add_argument(
+    '--scan_name', '-sn', type=str,
+    default='single_bunch_persistent_oscillations_2.3e11_2024_mini.yaml',
+    help='Name of the parameter scan to turn.'
+)
+parser.add_argument(
+    '--beam_process', '-bp', type=str, choices=['inj', 'fltbttm', 'ramp', 'flttp'],
+    default='inj',
+    help='Choose the part of the LHC cycle to simualte.'
+)
+parser.add_argument(
+    '--run_gpu', '-gpu', type=int, default=0,
+    help='Option to run the simulation on a GPU; default is False (0)'
+)
+parser.add_argument(
+    '--permutations', '-pm', type=int, default=1,
+    help='Option to choose to every permutation of the scanned parameters (grid scan)'
+         'or to have the values correlated with each other; default is to do the permutations'
+         '(True, 1)'
+)
+parser.add_argument(
+    '--memory', '-m', type=str,
+    help='Option to request more memory for the simulation; default is no request.'
+)
 
 args = parser.parse_args()
 
@@ -153,6 +165,9 @@ if bool(args.run_gpu):
     additional_string = 'request_gpus = 1\n'
 else:
     additional_string = ''
+
+if args.memory is not None:
+    additional_string += f'request_memory = {args.memory}\n'
 
 sub_content = f'executable = {sub_dir}{sim_folder_name}execute_sim.sh\n' \
               f'arguments = {save_to}\$(config)\n' \
