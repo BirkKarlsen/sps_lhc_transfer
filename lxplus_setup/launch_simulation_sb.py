@@ -23,12 +23,22 @@ job_flavours = ['espresso',         # 20 minutes
                 'tomorrow',         # 1 day
                 'testmatch',        # 3 days
                 'nextweek']         # 1 week
-parser.add_argument('--flavour', '-f', type=str, choices=job_flavours, default='testmatch',
-                    help='Length of allocated for the simulaton; default is testmatch (3 days)')
-parser.add_argument('--as_gpu', '-agpu', type=int, default=0,
-                    help='Option to run the simulation on a GPU; default is False (0)')
-parser.add_argument('--scan', '-sc', type=int, default=0,
-                    help='Flag to run as a part of a scan or as a single simualtion; default is single simulation (0)')
+parser.add_argument(
+    '--flavour', '-f', type=str, choices=job_flavours, default='testmatch',
+    help='Length of allocated for the simulaton; default is testmatch (3 days)'
+)
+parser.add_argument(
+    '--as_gpu', '-agpu', type=int, default=0,
+    help='Option to run the simulation on a GPU; default is False (0)'
+)
+parser.add_argument(
+    '--scan', '-sc', type=int, default=0,
+    help='Flag to run as a part of a scan or as a single simulation; default is single simulation (0)'
+)
+parser.add_argument(
+    '--memory', '-m', type=str,
+    help='Option to request more memory for the simulation; default is no request.'
+)
 
 
 args = parser.parse_args()
@@ -87,6 +97,9 @@ if bool(args.scan):
         additional_string = 'request_gpus = 1\n'
     else:
         additional_string = ''
+
+    if args.memory is not None:
+        additional_string += f'request_memory = {args.memory}\n'
 
     sub_content = f'executable = {bash_dir}{bash_file_name}\n' \
                   f'arguments = \$(ClusterId)\$(ProcId)\n' \
